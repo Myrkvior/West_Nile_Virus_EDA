@@ -1,0 +1,2099 @@
+---
+title: "Google Data Analytics: Capstone Project"
+subtitle: "Exploratory Data Analysis of West Nile Virus Within United States, 2010-2020"
+author: "Sarah Upham"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    theme: lumen
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+![](https://phil.cdc.gov//PHIL_Images/10701/10701_lores.jpg){width=50%}
+
+## Introduction
+
+This exploratory data analysis centers on West Nile virus within the United States and explores case trends nationally from 2010 through 2020.  
+
+Overview on the significance of West Nile virus:
+
+* West Nile virus first emerged in the United States as an outbreak in New York City in 1999 before rapidly spreading and becoming endemic, with all continental states and the District of Columbia reporting at least one locally acquired human case by 2012. ^1,2^  It is now the leading cause of human arboviral disease within the contiguous United States and persists as mosquito-borne transmission cycles within bird amplifier hosts.^1^  
+
+* Majority of human infections for West Nile virus are subclinical,  with 70-80% estimated to be asymptomatic.^1^  Individuals who are symptomatic generally experience a mild systemic, febrile response.  Less than 1% of human infections for West Nile virus progress into neuroinvasive disease, which typically presents as one or more of the following: meningitis, encephalitis, or acute flaccid paralysis.  The risk for the development of neuroinvasive disease increases with older age, having an immunosuppressive condition, or an underlying medical condition that may facilitate viral passage through the blood-brain barrier.^3^
+
+* There is currently no vaccine or specific treatment available for West Nile virus infection - only supportive treatment and care is provided.^4^  
+
+Disease surveillance continues to be important for West Nile virus, with monitoring seasonal outbreaks and identifying populations at increased risk so that resources are efficiently managed for prevention and control activities.  The ability to forecast West Nile virus outbreaks remains an active area of interest as well, as it would allow for proactive interventions in geographic regions predicted to be most impacted.^1^        
+
+One area that researchers have been currently examining for forecasting West Nile virus outbreaks are the environmental conditions, how they have been trending across various geographic regions, and their relationships against arboviral outbreak trends.^5^  Favorable environmental conditions play an important role in mosquito vector population densities, which in turn, may influence the success of transmission and spreading of West Nile virus.
+
+**There are two key questions this analysis will be addressing:**
+
+* **What case trends are we currently seeing for West Nile virus within the United States?**
+* **For identified case trends, are there any correlations with potential environmental driving factors?**
+
+### Goals
+
+In this exploratory analysis, we will be looking at an overview of reported West Nile Virus cases over the past decade within the United States and seeing what trends reflect nationally.  We will identify which geographic regions are most impacted based on these trends and explore three potential environmental driving factors behind these trends: temperature, precipitation, and dew point.  
+
+### Stakeholders
+
+Key stakeholders for this analysis:
+
+* General public
+* Individuals and organizations involved in public health surveillance activities
+
+## Data Preparation and Processing
+
+### Data Sources
+
+All data concerning reported West Nile virus cases for 2010-2020 were derived from the CDC through their publicly available Morbidity and Mortality Weekly Report (MMWR) publications.
+
+* **MMWR Publications:** [2010](https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6030a1.htm), [2011](https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6127a3.htm), [2012]( https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6225a1.htm), [2013](https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6324a1.htm), [2014](https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6434a1.htm), [2015](https://www.cdc.gov/mmwr/volumes/66/wr/mm6602a3.htm), [2016](https://www.cdc.gov/mmwr/volumes/67/wr/mm6701a3.htm), [2017](https://www.cdc.gov/mmwr/volumes/67/wr/mm6741a1.htm), [2018](https://www.cdc.gov/mmwr/volumes/68/wr/mm6831a1.htm), [2019](https://www.cdc.gov/mmwr/volumes/70/wr/mm7032a1.htm), [2020](https://www.cdc.gov/mmwr/volumes/71/wr/mm7118a3.htm) (click on year to view URL source)
+
+* **Disclaimer:** Usage of CDC material for this analysis does not imply endorsement by or affiliation with the United States Government, Department of Health and Human Services, or Centers for Disease Control and Prevention (CDC).  All CDC material used for this analysis are available at no charge through the CDC URL sources specified above. 
+
+All data concerning temperature, precipitation, and dew point for 2010-2020 were derived from NOAA through their publicly available databases.
+
+* **Temperature and Precipitation:** [U.S. Climate Divisional Database](https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/statewide/time-series) (click to view URL source)
+  + Field Settings
+    * Parameter: "Average Temperature" or "Precipitation"
+    * Time Scale: "All Months"
+    * Month: "December"
+    * Start Year: "2010"
+    * End Year: "2020"
+    * Display Base Period: (added checkmark here)
+  + For base period, 1900-2000 was selected for determination of temperature and precipitation anomaly for all states except Alaska, which was set at 1925-2000.  Reliable records for temperature and precipitation began in 1925 for Alaska.
+  + Temperature and precipitation data sets were not available at this source for Hawaii and District of Columbia.
+  + All data sets were downloaded as .csv files and converted to Excel Workbooks.
+  + Click [here](https://www.ncei.noaa.gov/access/monitoring/dyk/us-climate-divisions) for more information on the U.S. Climate Divisional Database.
+
+<!-- forcing space here -->
+
+* **Dew Point:** [Global Surface Summary of the Day](https://www.ncei.noaa.gov/data/global-summary-of-the-day/archive/) (click to view URL source)
+  + All tar.gz files for 2010-2020 were downloaded and unzipped using 7-Zip software to derive .csv files.
+  + Click [here](https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ncdc:C00516) for more information on Global Surface Summary of the Day.
+
+<!-- forcing space here -->
+
+* **Disclaimer:** Usage of NOAA material for this analysis does not imply endorsement by or affiliation with NOAA.
+
+### Data Limitations
+
+**Limitations of CDC Data:**
+
+* All West Nile virus disease surveillance data is maintained within the ArboNET, a national arboviral surveillance system managed by the CDC and all state health departments.  This system is dependent on providers considering West Nile virus disease as a diagnosis, obtaining the laboratory test, and reporting laboratory-confirmed cases to public health authorities.  
+
+* Neuroinvasive cases are considered a more accurate indicator of West Nile virus activity than non-neuroinvasive cases due to the severe morbidity associated.^6^  The reporting of non-neuroinvasive cases are more affected by disease awareness and the ability to obtain healthcare resources needed for confirmation as well.  Due to this, the analysis will focus on reported neuroinvasive cases for comparing West Nile virus activity across geographic regions.  
+
+* Only data sets on reported cases by year and by state were publicly available, which will limit the level of detail for this analysis.
+
+* Four cases of West Nile virus are missing date of illness onset for 2017 and one case of West Nile virus is missing date of illness onset for 2018, per the CDC MMWR reports for those years.  West Nile virus cases for all other years were accounted for on date of illness onset.
+
+* One discrepancy is present for the neuroinvasive cases within the 2015 CDC MMWR report, between the total neuroinvasive cases (1455) reported by the CDC and the summation of neuroinvasive subcategories (1528) reported by the CDC.  This discrepancy was due to the double-counting of subcategory cases, and this issue was found to be limited to 2015 for the time period 2010-2020.  The 2015 CDC MMWR report stated that 91 out of 118 cases of acute flaccid paralysis also had encephalitis or meningitis.  This was likely applied into the counts for encephalitis and meningitis, which was not done for all other years for 2010-2020.  See "CDC WNV Table Merge and Data Verification" subsection of "Collection, Cleaning, and Transformation Process" for more details.  This analysis will subsequently not assess neuroinvasive subcategory comparisons.
+
+**Limitations of NOAA Data:**
+
+* For temperature and precipitation, data was unavailable for Hawaii and the District of Columbia within the U.S. Climate Divisional Database.  Determination of Alaska’s temperature and precipitation anomaly also differs from the remaining contiguous states, where base period was established as 1925-2000 instead of 1900-2000.  Reliable temperature and precipitation recording began in 1925 for Alaska.
+
+### Collection, Cleaning, and Transformation Process
+
+#### West Nile Virus (WNV) Cases
+
+All CDC data sets were imported using Power Query on the URL sources listed within "Data Sources" section, cleaned and transformed using Power Query, and saved as Excel Workbooks by year.   The following was used as the file name format: **CDC_WNV_insert-year**.  Each Excel Workbook contains two tables, with one table showing a breakdown of key characteristics for all West Nile virus (WNV) cases that year, and the other table showing neuroinvasive West Nile virus (WNNV) cases by state for that year.  
+
+Data sets were cleaned and transformed on Power Query as follows (click on year to expand content):
+
+
+<details>
+  <summary>CDC 2010 Data</summary>
+  
+**Table I. Total_WNV_2010**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6030a1.htm")),
+    Data0 = Source{0}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Header", type text}, {"Characteristic", type text}, {"WNV No.", type text}, {"WNV (%)", type text}, {"CALV No.", type text}, {"CALV (%)", type text}, {"EEEV No.", type text}, {"EEEV (%)", type text}, {"SLEV No.", type text}, {"SLEV (%)", type text}, {"POWV No.", type text}, {"POWV (%)", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Header", "CALV No.", "CALV (%)", "EEEV No.", "EEEV (%)", "SLEV No.", "SLEV (%)", "POWV No.", "POWV (%)"}),
+    #"Removed Top Rows" = Table.Skip(#"Removed Columns",2),
+    #"Replaced Value" = Table.ReplaceValue(#"Removed Top Rows","Encephalitis","Neuroinvasive-encephalitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","Meningitis","Neuroinvasive-meningitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","Acute flaccid paralysis†","Neuroinvasive-acute flaccid paralysis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Replaced Value2",{{"WNV No.", Int64.Type}}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Changed Type1","January--March","January-March",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","April--June","April-June",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","July--September","July-September",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","October--December","October-December",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value7" = Table.ReplaceValue(#"Replaced Value6","18--59","18-59",Replacer.ReplaceText,{"Characteristic"}),
+    #"Added Custom" = Table.AddColumn(#"Replaced Value7", "Year", each 2010),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Added Custom",{{"Year", Int64.Type}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Changed Type2",{{"WNV No.", "WNV Total Cases"}, {"WNV (%)", "WNV Case %"}}),
+    #"Filtered Rows" = Table.SelectRows(#"Renamed Columns", each ([Characteristic] <> "Total"))
+in
+    #"Filtered Rows"
+```
+
+**Table II. WNNV_2010**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6030a1.htm")),
+    Data1 = Source{1}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data1,{{"Header", type text}, {"State†", type text}, {"WNV No.", type text}, {"WNV Rate", type text}, {"CALV No.", type text}, {"CALV Rate", type text}, {"EEEV No.", type text}, {"EEEV Rate", type text}, {"SLEV No.", type text}, {"SLEV Rate", type text}, {"POWV No.", type text}, {"POWV Rate", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Header", "CALV No.", "CALV Rate", "EEEV No.", "EEEV Rate", "SLEV No.", "SLEV Rate", "POWV No.", "POWV Rate"}),
+    #"Added Custom" = Table.AddColumn(#"Removed Columns", "Year", each 2010),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Added Custom",{{"Year", Int64.Type}}),
+    #"Removed Top Rows" = Table.Skip(#"Changed Type1",2),
+    #"Renamed Columns" = Table.RenameColumns(#"Removed Top Rows",{{"State†", "State"}}),
+    #"Replaced Value" = Table.ReplaceValue(#"Renamed Columns","---","0",Replacer.ReplaceText,{"WNV No.", "WNV Rate"}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Replaced Value",{{"WNV No.", Int64.Type}, {"WNV Rate", type number}}),
+    #"Filtered Rows" = Table.SelectRows(#"Changed Type2", each ([State] <> "East North Central" and [State] <> "East South Central" and [State] <> "Middle Atlantic" and [State] <> "Mountain" and [State] <> "New England" and [State] <> "Pacific" and [State] <> "South Atlantic" and [State] <> "West North Central" and [State] <> "West South Central")),
+    #"Renamed Columns1" = Table.RenameColumns(#"Filtered Rows",{{"WNV No.", "WNNV Total Cases"}, {"WNV Rate", "WNNV Rate"}})
+in
+    #"Renamed Columns1"
+```
+</details> 
+
+<details>
+  <summary>CDC 2011 Data</summary>
+
+**Table I. Total_WNV_2011**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6127a3.htm")),
+    Data0 = Source{0}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Header", type text}, {"Characteristic", type text}, {"Virus West Nile No.", type text}, {"Virus West Nile (%)", type text}, {"Virus La Crosse No.", type text}, {"Virus La Crosse (%)", type text}, {"Virus Powassan No.", type text}, {"Virus Powassan (%)", type text}, {"Virus St. Louis encephalitis No.", type text}, {"Virus St. Louis encephalitis (%)", type text}, {"Virus Eastern equine encephalitis No.", type text}, {"Virus Eastern equine encephalitis (%)", type text}, {"Virus Jamestown Canyon No.", type text}, {"Virus Jamestown Canyon (%)", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Header", "Virus La Crosse No.", "Virus La Crosse (%)", "Virus Powassan No.", "Virus Powassan (%)", "Virus St. Louis encephalitis No.", "Virus St. Louis encephalitis (%)", "Virus Eastern equine encephalitis No.", "Virus Eastern equine encephalitis (%)", "Virus Jamestown Canyon No.", "Virus Jamestown Canyon (%)"}),
+    #"Removed Top Rows" = Table.Skip(#"Removed Columns",3),
+    #"Added Custom" = Table.AddColumn(#"Removed Top Rows", "Year", each 2011),
+    #"Filtered Rows" = Table.SelectRows(#"Added Custom", each ([Characteristic] <> "Outcome")),
+    #"Replaced Value" = Table.ReplaceValue(#"Filtered Rows","18–59","18-59",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","January–March","January-March",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","April–June","April-June",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","July–September","July-September",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","October–December","October-December",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","Meningitis","Neuroinvasive-meningitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","Encephalitis","Neuroinvasive-encephalitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value7" = Table.ReplaceValue(#"Replaced Value6","Acute flaccid paralysis*","Neuroinvasive-acute flaccid paralysis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Replaced Value7",{{"Virus West Nile No.", Int64.Type}, {"Year", Int64.Type}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Changed Type1",{{"Virus West Nile No.", "WNV Total Cases"}, {"Virus West Nile (%)", "WNV Case %"}}),
+    #"Filtered Rows1" = Table.SelectRows(#"Renamed Columns", each ([Characteristic] <> "Total"))
+in
+    #"Filtered Rows1"
+```
+
+**Table II. WNNV_2011**  Two separate queries were generated due to how the WNNV data had been read and imported by Power Query for the URL source.  Both queries were subsequently appended as new to create a merged table. 
+
+**Query 1 (imported as "Table 1")**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6127a3.htm")),
+    Data1 = Source{1}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data1,{{"Header", type text}, {"U.S. Census division/State†", type text}, {"Virus West Nile No.", type text}, {"Virus West Nile Rate", type text}, {"Virus La Crosse No.", type text}, {"Virus La Crosse Rate", type text}, {"Virus Powassan No.", type text}, {"Virus Powassan Rate", type text}, {"Virus St. Louis encephalitis No.", type text}, {"Virus St. Louis encephalitis Rate", type text}, {"Virus Eastern equine encephalitis No.", type text}, {"Virus Eastern equine encephalitis Rate", type text}, {"Virus Jamestown Canyon No.", type text}, {"Virus Jamestown Canyon Rate", type text}})
+in
+    #"Changed Type"
+```
+
+**Query 2 (imported as "Table 2")**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6127a3.htm")),
+    Data2 = Source{2}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data2,{{"Header", type text}, {"U.S. Census division/State†", type text}, {"Virus West Nile No.", type text}, {"Virus West Nile Rate", type text}, {"Virus La Crosse No.", type text}, {"Virus La Crosse Rate", type text}, {"Virus Powassan No.", type text}, {"Virus Powassan Rate", type text}, {"Virus St. Louis encephalitis No.", type text}, {"Virus St. Louis encephalitis Rate", type text}, {"Virus Eastern equine encephalitis No.", type text}, {"Virus Eastern equine encephalitis Rate", type text}, {"Virus Jamestown Canyon No.", type text}, {"Virus Jamestown Canyon Rate", type text}})
+in
+    #"Changed Type"
+```
+
+**Merged Table**
+```
+let
+    Source = Table.Combine({#"Table 1", #"Table 2"}),
+    #"Removed Columns" = Table.RemoveColumns(Source,{"Header", "Virus La Crosse No.", "Virus La Crosse Rate", "Virus Powassan No.", "Virus Powassan Rate", "Virus St. Louis encephalitis No.", "Virus St. Louis encephalitis Rate", "Virus Eastern equine encephalitis No.", "Virus Eastern equine encephalitis Rate", "Virus Jamestown Canyon No.", "Virus Jamestown Canyon Rate"}),
+    #"Removed Top Rows" = Table.Skip(#"Removed Columns",3),
+    #"Renamed Columns" = Table.RenameColumns(#"Removed Top Rows",{{"U.S. Census division/State†", "State"}, {"Virus West Nile No.", "WNNV Total Cases"}, {"Virus West Nile Rate", "WNNV Rate"}}),
+    #"Added Custom" = Table.AddColumn(#"Renamed Columns", "Year", each 2011),
+    #"Replaced Value" = Table.ReplaceValue(#"Added Custom","—","0",Replacer.ReplaceText,{"WNNV Total Cases", "WNNV Rate"}),
+    #"Changed Type" = Table.TransformColumnTypes(#"Replaced Value",{{"WNNV Total Cases", Int64.Type}, {"WNNV Rate", type number}, {"Year", Int64.Type}}),
+    #"Removed Errors" = Table.RemoveRowsWithErrors(#"Changed Type", {"WNNV Rate", "WNNV Total Cases"}),
+    #"Filtered Rows" = Table.SelectRows(#"Removed Errors", each ([State] <> "East North Central" and [State] <> "East South Central" and [State] <> "Middle Atlantic" and [State] <> "Mountain" and [State] <> "New England" and [State] <> "Pacific" and [State] <> "South Atlantic" and [State] <> "West North Central" and [State] <> "West South Central")),
+    #"Replaced Value1" = Table.ReplaceValue(#"Filtered Rows","Missouri§","Missouri",Replacer.ReplaceText,{"State"})
+in
+    #"Replaced Value1"
+```
+</details> 
+
+<details>
+  <summary>CDC 2012 Data</summary>
+  
+**Table I. Total_WNV_2012**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6225a1.htm")),
+    Data0 = Source{0}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Header", type text}, {"Characteristic", type text}, {"Virus West Nile (N = 5,674) No.", type text}, {"Virus West Nile (N = 5,674) (%)", type text}, {"Virus La Crosse (N = 78) No.", type text}, {"Virus La Crosse (N = 78) (%)", type text}, {"Virus Eastern equine encephalitis (N = 15) No.", type text}, {"Virus Eastern equine encephalitis (N = 15) (%)", type text}, {"Virus Powassan (N = 7) No.", type text}, {"Virus Powassan (N = 7) (%)", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Header", "Virus La Crosse (N = 78) No.", "Virus La Crosse (N = 78) (%)", "Virus Eastern equine encephalitis (N = 15) No.", "Virus Eastern equine encephalitis (N = 15) (%)", "Virus Powassan (N = 7) No.", "Virus Powassan (N = 7) (%)"}),
+    #"Removed Top Rows" = Table.Skip(#"Removed Columns",3),
+    #"Added Custom" = Table.AddColumn(#"Removed Top Rows", "Year", each 2012),
+    #"Renamed Columns" = Table.RenameColumns(#"Added Custom",{{"Virus West Nile (N = 5,674) No.", "WNV Total Cases"}, {"Virus West Nile (N = 5,674) (%)", "WNV Case %"}}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Renamed Columns",{{"Year", Int64.Type}, {"WNV Total Cases", Int64.Type}}),
+    #"Replaced Value" = Table.ReplaceValue(#"Changed Type1","18–59","18-59",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","January–March","January-March",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","April–June","April-June",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","July–September","July-September",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","October–December","October-December",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","Encephalitis","Neuroinvasive-encephalitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","Meningitis","Neuroinvasive-meningitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value7" = Table.ReplaceValue(#"Replaced Value6","Acute flaccid paralysis†","Neuroinvasive-acute flaccid paralysis",Replacer.ReplaceText,{"Characteristic"})
+in
+    #"Replaced Value7"
+```
+
+**Table II. WNNV_2012**  Two separate queries were generated due to how the WNNV data had been read and imported by Power Query for the URL source.  Both queries were subsequently appended as new to create a merged table. 
+
+**Query 1 (imported as "Table 1")**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6225a1.htm")),
+    Data1 = Source{1}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data1,{{"Header", type text}, {"U.S. Census region and state", type text}, {"Virus West Nile No.", type text}, {"Virus West Nile Rate", type text}, {"Virus La Crosse No.", type text}, {"Virus La Crosse Rate", type text}, {"Virus Eastern equine encephalitis No.", type text}, {"Virus Eastern equine encephalitis Rate", type text}, {"Virus Powassan No.", type text}, {"Virus Powassan Rate", type text}})
+in
+    #"Changed Type"
+```
+
+**Query 2 (imported as "Table 2")**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6225a1.htm")),
+    Data2 = Source{2}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data2,{{"Header", type text}, {"U.S. Census region and state", type text}, {"Virus West Nile No.", type text}, {"Virus West Nile Rate", type text}, {"Virus La Crosse No.", type text}, {"Virus La Crosse Rate", type text}, {"Virus Eastern equine encephalitis No.", type text}, {"Virus Eastern equine encephalitis Rate", type text}, {"Virus Powassan No.", type text}, {"Virus Powassan Rate", type text}})
+in
+    #"Changed Type"
+```
+
+**Merged Table**
+```
+let
+    Source = Table.Combine({#"Table 1", #"Table 2"}),
+    #"Removed Columns" = Table.RemoveColumns(Source,{"Header", "Virus La Crosse No.", "Virus La Crosse Rate", "Virus Eastern equine encephalitis No.", "Virus Eastern equine encephalitis Rate", "Virus Powassan No.", "Virus Powassan Rate"}),
+    #"Removed Top Rows" = Table.Skip(#"Removed Columns",3),
+    #"Added Custom" = Table.AddColumn(#"Removed Top Rows", "Year", each 2012),
+    #"Renamed Columns" = Table.RenameColumns(#"Added Custom",{{"Virus West Nile No.", "WNNV Total Cases"}, {"Virus West Nile Rate", "WNNV Rate"}, {"U.S. Census region and state", "State"}}),
+    #"Replaced Value" = Table.ReplaceValue(#"Renamed Columns","—",0,Replacer.ReplaceValue,{"State", "WNNV Total Cases", "WNNV Rate", "Year"}),
+    #"Changed Type" = Table.TransformColumnTypes(#"Replaced Value",{{"Year", Int64.Type}, {"WNNV Rate", type number}, {"WNNV Total Cases", Int64.Type}}),
+    #"Removed Errors" = Table.RemoveRowsWithErrors(#"Changed Type", {"State", "WNNV Total Cases", "WNNV Rate", "Year"}),
+    #"Filtered Rows" = Table.SelectRows(#"Removed Errors", each ([State] <> "East North Central" and [State] <> "East South Central" and [State] <> "Middle Atlantic" and [State] <> "Mountain" and [State] <> "New England" and [State] <> "Pacific" and [State] <> "Puerto Rico" and [State] <> "South Atlantic" and [State] <> "West North Central" and [State] <> "West South Central")),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Filtered Rows",{{"State", type text}})
+in
+    #"Changed Type1"
+```
+</details> 
+
+<details>
+  <summary>CDC 2013 Data</summary>
+  
+**Table I. Total_WNV_2013**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6324a1.htm")),
+    Data0 = Source{0}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}, {"Column7", type text}, {"Column8", type text}, {"Column9", type text}, {"Column10", type text}, {"Column11", type text}, {"Column12", type text}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"Column2", "Characteristic"}, {"Column3", "WNV Total Cases"}, {"Column4", "WNV Case %"}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns",{"Column1", "Column5", "Column6", "Column7", "Column8", "Column9", "Column10", "Column11", "Column12"}),
+    #"Added Custom" = Table.AddColumn(#"Removed Columns", "Year", each 2013),
+    #"Removed Top Rows" = Table.Skip(#"Added Custom",3),
+    #"Filtered Rows" = Table.SelectRows(#"Removed Top Rows", each ([Characteristic] <> "Clinical syndrome" and [Characteristic] <> "Outcome" and [Characteristic] <> "Period of illness onset" and [Characteristic] <> "Sex")),
+    #"Replaced Value" = Table.ReplaceValue(#"Filtered Rows","119§","119",Replacer.ReplaceText,{"WNV Total Cases"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","18–59","18-59",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","January–March","January-March",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","April–June","April-June",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","July–September","July-September",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","October–December","October-December",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","Encephalitis","Neuroinvasive-encephalitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value7" = Table.ReplaceValue(#"Replaced Value6","Meningitis","Neuroinvasive-meningitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value8" = Table.ReplaceValue(#"Replaced Value7","Acute flaccid paralysis†","Neuroinvasive-acute flaccid paralysis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Replaced Value8",{{"WNV Total Cases", Int64.Type}, {"Year", Int64.Type}})
+in
+    #"Changed Type1"
+```
+
+**Table II. WNNV_2013**  Two separate queries were generated due to how the WNNV data had been read and imported by Power Query for the URL source.  Both queries were subsequently appended as new to create a merged table. 
+
+**Query 1 (imported as "Table 1")**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6324a1.htm")),
+    Data1 = Source{1}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data1,{{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}, {"Column7", type text}, {"Column8", type text}, {"Column9", type text}, {"Column10", type text}, {"Column11", type text}, {"Column12", type text}})
+in
+    #"Changed Type"
+```
+
+**Query 2 (imported as "Table 2")**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6324a1.htm")),
+    Data2 = Source{2}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data2,{{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}, {"Column7", type text}, {"Column8", type text}, {"Column9", type text}, {"Column10", type text}, {"Column11", type text}, {"Column12", type text}})
+in
+    #"Changed Type"
+```
+
+**Merged Table**
+```
+let
+    Source = Table.Combine({#"Table 1", #"Table 2"}),
+    #"Renamed Columns" = Table.RenameColumns(Source,{{"Column2", "State"}, {"Column3", "WNNV Total Cases"}, {"Column4", "WNNV Rate"}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns",{"Column1", "Column5", "Column6", "Column7", "Column8", "Column9", "Column10", "Column11", "Column12"}),
+    #"Added Custom" = Table.AddColumn(#"Removed Columns", "Year", each 2013),
+    #"Removed Top Rows" = Table.Skip(#"Added Custom",3),
+    #"Replaced Value" = Table.ReplaceValue(#"Removed Top Rows","—",0,Replacer.ReplaceValue,{"State", "WNNV Total Cases", "WNNV Rate", "Year"}),
+    #"Changed Type" = Table.TransformColumnTypes(#"Replaced Value",{{"Year", Int64.Type}, {"WNNV Total Cases", Int64.Type}, {"WNNV Rate", type number}}),
+    #"Removed Errors" = Table.RemoveRowsWithErrors(#"Changed Type", {"WNNV Total Cases", "WNNV Rate"}),
+    #"Filtered Rows" = Table.SelectRows(#"Removed Errors", each ([State] <> "East North Central" and [State] <> "East South Central" and [State] <> "Middle Atlantic" and [State] <> "Mountain" and [State] <> "New England" and [State] <> "Pacific" and [State] <> "South Atlantic" and [State] <> "West North Central" and [State] <> "West South Central")),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Filtered Rows",{{"State", type text}})
+in
+    #"Changed Type1"
+```
+</details> 
+
+<details>
+  <summary>CDC 2014 Data</summary>
+  
+**Table I. Total_WNV_2014**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6434a1.htm")),
+    Data0 = Source{0}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}, {"Column7", type text}, {"Column8", type text}, {"Column9", type text}, {"Column10", type text}, {"Column11", type text}, {"Column12", type text}, {"Column13", type text}, {"Column14", type text}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"Column2", "Characteristic"}, {"Column3", "WNV Total Cases"}, {"Column4", "WNV Case %"}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns",{"Column1", "Column5", "Column6", "Column7", "Column8", "Column9", "Column10", "Column11", "Column12", "Column13", "Column14"}),
+    #"Added Custom" = Table.AddColumn(#"Removed Columns", "Year", each 2014),
+    #"Removed Top Rows" = Table.Skip(#"Added Custom",3),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Removed Top Rows",{{"WNV Total Cases", Int64.Type}, {"Year", Int64.Type}}),
+    #"Replaced Value" = Table.ReplaceValue(#"Changed Type1","18–59","18-59",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","January–March","January-March",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","April–June","April-June",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","July–September","July-September",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","October–December","October-December",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","Encephalitis","Neuroinvasive-encephalitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","Meningitis","Neuroinvasive-meningitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value7" = Table.ReplaceValue(#"Replaced Value6","Acute flaccid paralysis§","Neuroinvasive-acute flaccid paralysis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value8" = Table.ReplaceValue(#"Replaced Value7","Other neurologic","Neuroinvasive-other",Replacer.ReplaceText,{"Characteristic"})
+in
+    #"Replaced Value8"
+```
+
+**Table II. WNNV_2014**  Two separate queries were generated due to how the WNNV data had been read and imported by Power Query for the URL source.  Both queries were subsequently appended as new to create a merged table. 
+
+**Query 1 (imported as "Table 1")**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6434a1.htm")),
+    Data1 = Source{1}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data1,{{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}, {"Column7", type text}, {"Column8", type text}, {"Column9", type text}, {"Column10", type text}, {"Column11", type text}, {"Column12", type text}, {"Column13", type text}, {"Column14", type text}})
+in
+    #"Changed Type"
+```
+
+**Query 2 (imported as "Table 2")**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6434a1.htm")),
+    Data2 = Source{2}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data2,{{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}, {"Column7", type text}, {"Column8", type text}, {"Column9", type text}, {"Column10", type text}, {"Column11", type text}, {"Column12", type text}, {"Column13", type text}, {"Column14", type text}})
+in
+    #"Changed Type"
+```
+
+**Merged Table**
+```
+let
+    Source = Table.Combine({#"Table 1", #"Table 2"}),
+    #"Renamed Columns" = Table.RenameColumns(Source,{{"Column2", "State"}, {"Column3", "WNNV Total Cases"}, {"Column4", "WNNV Rate"}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns",{"Column1", "Column5", "Column6", "Column7", "Column8", "Column9", "Column10", "Column11", "Column12", "Column13", "Column14"}),
+    #"Added Custom" = Table.AddColumn(#"Removed Columns", "Year", each 2014),
+    #"Replaced Value" = Table.ReplaceValue(#"Added Custom","—","0",Replacer.ReplaceText,{"WNNV Total Cases", "WNNV Rate"}),
+    #"Removed Top Rows" = Table.Skip(#"Replaced Value",3),
+    #"Changed Type" = Table.TransformColumnTypes(#"Removed Top Rows",{{"WNNV Total Cases", Int64.Type}, {"Year", Int64.Type}, {"WNNV Rate", type number}}),
+    #"Removed Errors" = Table.RemoveRowsWithErrors(#"Changed Type", {"State", "WNNV Total Cases", "WNNV Rate", "Year"}),
+    #"Filtered Rows" = Table.SelectRows(#"Removed Errors", each ([State] <> "E North Central" and [State] <> "E South Central" and [State] <> "Mid Atlantic" and [State] <> "Mountain" and [State] <> "New England" and [State] <> "Pacific" and [State] <> "S Atlantic" and [State] <> "W North Central" and [State] <> "W South Central"))
+in
+    #"Filtered Rows"
+```
+</details> 
+
+<details>
+  <summary>CDC 2015 Data</summary>
+  
+**Table I. Total_WNV_2015**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/66/wr/mm6602a3.htm")),
+    Data0 = Source{0}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Characteristic", type text}, {"Virus type West Nile (N = 2,175) No. (%)", type text}, {"Virus type La Crosse (N = 55) No. (%)", type text}, {"Virus type St. Louis encephalitis (N = 23) No. (%)", type text}, {"Virus type Jamestown Canyon (N = 11) No. (%)", type text}, {"Virus type Powassan (N = 7) No. (%)", type text}, {"Virus type Eastern equine encephalitis (N = 6) No. (%)", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Virus type La Crosse (N = 55) No. (%)", "Virus type St. Louis encephalitis (N = 23) No. (%)", "Virus type Jamestown Canyon (N = 11) No. (%)", "Virus type Powassan (N = 7) No. (%)", "Virus type Eastern equine encephalitis (N = 6) No. (%)"}),
+    #"Added Custom" = Table.AddColumn(#"Removed Columns", "Year", each 2015),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Added Custom", "Virus type West Nile (N = 2,175) No. (%)", Splitter.SplitTextByEachDelimiter({" "}, QuoteStyle.Csv, true), {"Virus type West Nile (N = 2,175) No. (%).1", "Virus type West Nile (N = 2,175) No. (%).2"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Split Column by Delimiter",{{"Virus type West Nile (N = 2,175) No. (%).1", type text}, {"Virus type West Nile (N = 2,175) No. (%).2", type text}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Changed Type1",{{"Virus type West Nile (N = 2,175) No. (%).1", "WNV Total Cases"}, {"Virus type West Nile (N = 2,175) No. (%).2", "WNV Case %"}}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Renamed Columns",{{"WNV Total Cases", Int64.Type}, {"Year", Int64.Type}}),
+    #"Removed Errors" = Table.RemoveRowsWithErrors(#"Changed Type2", {"Year", "Characteristic", "WNV Total Cases", "WNV Case %"}),
+    #"Replaced Value" = Table.ReplaceValue(#"Removed Errors","18–59","18-59",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","January‒March","January-March",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","April‒June","April-June",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","July‒September","July-September",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","October‒December","October-December",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","Encephalitis","Neuroinvasive-encephalitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","Meningitis","Neuroinvasive-meningitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value7" = Table.ReplaceValue(#"Replaced Value6","Acute flaccid paralysis","Neuroinvasive-acute flaccid paralysis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value8" = Table.ReplaceValue(#"Replaced Value7","Other","Neuroinvasive-other",Replacer.ReplaceText,{"Characteristic"})
+in
+    #"Replaced Value8"
+```
+
+**Table II. WNNV_2015**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/66/wr/mm6602a3.htm")),
+    Data1 = Source{1}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data1,{{"U.S. Census division/State United States", type text}, {"Virus type West Nile No. (Rate) 1,455 (0.45)", type text}, {"Virus type La Crosse No. (Rate) 51 (0.02)", type text}, {"Virus type St. Louis encephalitis No. (Rate) 19 (0.01)", type text}, {"Virus type Jamestown Canyon No. (Rate) 6 (<0.01)", type text}, {"Virus type Powassan No. (Rate) 6 (<0.01)", type text}, {"Virus type Eastern equine encephalitis No. (Rate) 6 (<0.01)", type text}}),
+    #"Demoted Headers" = Table.DemoteHeaders(#"Changed Type"),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Demoted Headers",{{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}, {"Column7", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type1",{"Column3", "Column4", "Column5", "Column6", "Column7"}),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Removed Columns", "Column2", Splitter.SplitTextByEachDelimiter({" "}, QuoteStyle.Csv, true), {"Column2.1", "Column2.2"}),
+    #"Added Custom" = Table.AddColumn(#"Split Column by Delimiter", "Year", each 2015),
+    #"Renamed Columns" = Table.RenameColumns(#"Added Custom",{{"Column1", "State"}, {"Column2.1", "WNNV Total Cases"}, {"Column2.2", "WNNV Rate"}}),
+    #"Replaced Value" = Table.ReplaceValue(#"Renamed Columns","—","0",Replacer.ReplaceText,{"WNNV Total Cases", "WNNV Rate"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value",null,"0",Replacer.ReplaceValue,{"WNNV Rate"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","Virus type West Nile No. (Rate) 1,455","1455",Replacer.ReplaceText,{"WNNV Total Cases"}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Replaced Value2",{{"WNNV Total Cases", Int64.Type}}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Changed Type2","(","",Replacer.ReplaceText,{"WNNV Rate"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3",")","",Replacer.ReplaceText,{"WNNV Rate"}),
+    #"Changed Type3" = Table.TransformColumnTypes(#"Replaced Value4",{{"WNNV Rate", type number}, {"Year", Int64.Type}}),
+    #"Filtered Rows" = Table.SelectRows(#"Changed Type3", each ([State] <> "E South Central" and [State] <> "E. North Central" and [State] <> "Mid Atlantic" and [State] <> "Mountain" and [State] <> "New England" and [State] <> "Pacific" and [State] <> "S. Atlantic" and [State] <> "W South Central" and [State] <> "W. North Central")),
+    #"Replaced Value5" = Table.ReplaceValue(#"Filtered Rows","U.S. Census division/State United States","United States",Replacer.ReplaceText,{"State"})
+in
+    #"Replaced Value5"
+```
+</details> 
+
+<details>
+  <summary>CDC 2016 Data</summary>
+  
+**Table I. Total_WNV_2016**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/67/wr/mm6701a3.htm?s_cid=mm6701a3_w")),
+    Data0 = Source{0}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Characteristic", type text}, {"Virus type, no. (%) West Nile (N = 2,150)", type text}, {"Virus type, no. (%) La Crosse (N = 35)", type text}, {"Virus type, no. (%) Powassan (N = 22)", type text}, {"Virus type, no. (%) Jamestown Canyon (N = 15)", type text}, {"Virus type, no. (%) Saint Louis encephalitis (N = 8)", type text}, {"Virus type, no. (%) Eastern equine encephalitis (N = 7)", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Virus type, no. (%) La Crosse (N = 35)", "Virus type, no. (%) Powassan (N = 22)", "Virus type, no. (%) Jamestown Canyon (N = 15)", "Virus type, no. (%) Saint Louis encephalitis (N = 8)", "Virus type, no. (%) Eastern equine encephalitis (N = 7)"}),
+    #"Removed Top Rows" = Table.Skip(#"Removed Columns",1),
+    #"Added Custom" = Table.AddColumn(#"Removed Top Rows", "Year", each 2016),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Added Custom", "Virus type, no. (%) West Nile (N = 2,150)", Splitter.SplitTextByEachDelimiter({" "}, QuoteStyle.Csv, true), {"Virus type, no. (%) West Nile (N = 2,150).1", "Virus type, no. (%) West Nile (N = 2,150).2"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Split Column by Delimiter",{{"Virus type, no. (%) West Nile (N = 2,150).1", type text}, {"Virus type, no. (%) West Nile (N = 2,150).2", type text}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Changed Type1",{{"Virus type, no. (%) West Nile (N = 2,150).1", "WNV Total Cases"}, {"Virus type, no. (%) West Nile (N = 2,150).2", "WNV Case %"}}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Renamed Columns",{{"WNV Total Cases", Int64.Type}, {"Year", Int64.Type}}),
+    #"Removed Errors" = Table.RemoveRowsWithErrors(#"Changed Type2", {"WNV Total Cases", "WNV Case %", "Year", "Characteristic"}),
+    #"Replaced Value" = Table.ReplaceValue(#"Removed Errors","18–59","18-59",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","January–March","January-March",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","April–June","April-June",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","July–September","July-September",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","October–December","October-December",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","Non-neuroinvasive","Nonneuroinvasive",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","Encephalitis","Neuroinvasive-encephalitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value7" = Table.ReplaceValue(#"Replaced Value6","Meningitis","Neuroinvasive-meningitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value8" = Table.ReplaceValue(#"Replaced Value7","AFP","Neuroinvasive-acute flaccid paralysis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value9" = Table.ReplaceValue(#"Replaced Value8","Other","Neuroinvasive-other",Replacer.ReplaceText,{"Characteristic"})
+in
+    #"Replaced Value9"
+```
+
+**Table II. WNNV_2016**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/67/wr/mm6701a3.htm?s_cid=mm6701a3_w")),
+    Data1 = Source{1}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data1,{{"U.S. Census division/State", type text}, {"Virus type West Nile No.", type text}, {"Virus type West Nile Rate", type text}, {"Virus type La Crosse No.", type text}, {"Virus type La Crosse Rate", type text}, {"Virus type Powassan No.", type text}, {"Virus type Powassan Rate", type text}, {"Virus type Jamestown Canyon No.", type text}, {"Virus type Jamestown Canyon Rate", type text}, {"Virus type Saint Louis encephalitis No.", type text}, {"Virus type Saint Louis encephalitis Rate", type text}, {"Virus type Eastern equine encephalitis No.", type text}, {"Virus type Eastern equine encephalitis Rate", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Virus type La Crosse No.", "Virus type La Crosse Rate", "Virus type Powassan No.", "Virus type Powassan Rate", "Virus type Jamestown Canyon No.", "Virus type Jamestown Canyon Rate", "Virus type Saint Louis encephalitis No.", "Virus type Saint Louis encephalitis Rate", "Virus type Eastern equine encephalitis No.", "Virus type Eastern equine encephalitis Rate"}),
+    #"Added Custom" = Table.AddColumn(#"Removed Columns", "Year", each 2016),
+    #"Replaced Value" = Table.ReplaceValue(#"Added Custom","—","0",Replacer.ReplaceText,{"Virus type West Nile No.", "Virus type West Nile Rate"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Replaced Value",{{"Year", Int64.Type}, {"Virus type West Nile Rate", type number}, {"Virus type West Nile No.", Int64.Type}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Changed Type1",{{"U.S. Census division/State", "State"}, {"Virus type West Nile No.", "WNNV Total Cases"}, {"Virus type West Nile Rate", "WNNV Rate"}}),
+    #"Filtered Rows" = Table.SelectRows(#"Renamed Columns", each ([State] <> "East North Central" and [State] <> "East South Central" and [State] <> "Middle Atlantic" and [State] <> "Mountain" and [State] <> "New England" and [State] <> "Pacific" and [State] <> "South Atlantic" and [State] <> "West North Central" and [State] <> "West South Central"))
+in
+    #"Filtered Rows"
+```
+</details> 
+
+<details>
+  <summary>CDC 2017 Data</summary>
+
+**Table I. Total_WNV_2017**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/67/wr/mm6741a1.htm?s_cid=mm6741a1_w")),
+    Data0 = Source{0}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Characteristic", type text}, {"Virus no. (%) West Nile* (N = 2,097)", type text}, {"Virus no. (%) Jamestown Canyon (N = 75)", type text}, {"Virus no. (%) La Crosse (N = 63)", type text}, {"Virus no. (%) Powassan (N = 34)", type text}, {"Virus no. (%) St. Louis encephalitis* (N = 11)", type text}, {"Virus no. (%) Eastern equine encephalitis (N = 5)", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Virus no. (%) Jamestown Canyon (N = 75)", "Virus no. (%) La Crosse (N = 63)", "Virus no. (%) Powassan (N = 34)", "Virus no. (%) St. Louis encephalitis* (N = 11)", "Virus no. (%) Eastern equine encephalitis (N = 5)"}),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Removed Columns", "Virus no. (%) West Nile* (N = 2,097)", Splitter.SplitTextByEachDelimiter({" "}, QuoteStyle.Csv, true), {"Virus no. (%) West Nile* (N = 2,097).1", "Virus no. (%) West Nile* (N = 2,097).2"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Split Column by Delimiter",{{"Virus no. (%) West Nile* (N = 2,097).1", type text}, {"Virus no. (%) West Nile* (N = 2,097).2", type text}}),
+    #"Added Custom" = Table.AddColumn(#"Changed Type1", "Year", each 2017),
+    #"Renamed Columns" = Table.RenameColumns(#"Added Custom",{{"Virus no. (%) West Nile* (N = 2,097).1", "WNV Total Cases"}, {"Virus no. (%) West Nile* (N = 2,097).2", "WNV Case %"}}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Renamed Columns",{{"Year", Int64.Type}, {"WNV Total Cases", Int64.Type}}),
+    #"Removed Errors" = Table.RemoveRowsWithErrors(#"Changed Type2", {"WNV Total Cases", "Characteristic", "WNV Case %", "Year"}),
+    #"Replaced Value" = Table.ReplaceValue(#"Removed Errors","18–59","18-59",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","January–March","January-March",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","April–June","April-June",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","July–September","July-September",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","October–December","October-December",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","Encephalitis","Neuroinvasive-encephalitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","Meningitis","Neuroinvasive-meningitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value7" = Table.ReplaceValue(#"Replaced Value6","AFP","Neuroinvasive-acute flaccid paralysis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value8" = Table.ReplaceValue(#"Replaced Value7","Other","Neuroinvasive-other",Replacer.ReplaceText,{"Characteristic"})
+in
+    #"Replaced Value8"
+```
+
+**Table II. WNNV_2017**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/67/wr/mm6741a1.htm?s_cid=mm6741a1_w")),
+    Data1 = Source{1}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data1,{{"U.S. Census Division/State United States", type text}, {"Virus West Nile No. 1,425", type text}, {"Virus West Nile Rate 0.44", type text}, {"Virus Jamestown Canyon No. 58", type text}, {"Virus Jamestown Canyon Rate 0.02", type text}, {"Virus La Crosse No. 63", type text}, {"Virus La Crosse Rate 0.02", type text}, {"Virus Powassan No. 33", type text}, {"Virus Powassan Rate 0.01", type text}, {"Virus St. Louis encephalitis No. 6", type text}, {"Virus St. Louis encephalitis Rate <0.01", type text}, {"Virus Eastern equine encephalitis No. 5", type text}, {"Virus Eastern equine encephalitis Rate <0.01", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Virus Jamestown Canyon No. 58", "Virus Jamestown Canyon Rate 0.02", "Virus La Crosse No. 63", "Virus La Crosse Rate 0.02", "Virus Powassan No. 33", "Virus Powassan Rate 0.01", "Virus St. Louis encephalitis No. 6", "Virus St. Louis encephalitis Rate <0.01", "Virus Eastern equine encephalitis No. 5", "Virus Eastern equine encephalitis Rate <0.01"}),
+    #"Demoted Headers" = Table.DemoteHeaders(#"Removed Columns"),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Demoted Headers",{{"Column1", type text}, {"Column2", type text}, {"Column3", type text}}),
+    #"Added Custom" = Table.AddColumn(#"Changed Type1", "Year", each 2017),
+    #"Renamed Columns" = Table.RenameColumns(#"Added Custom",{{"Column1", "State"}, {"Column2", "WNNV Total Cases"}, {"Column3", "WNNV Rate"}}),
+    #"Replaced Value" = Table.ReplaceValue(#"Renamed Columns","—","0",Replacer.ReplaceText,{"WNNV Total Cases", "WNNV Rate"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","U.S. Census Division/State United States","United States",Replacer.ReplaceText,{"State"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","Virus West Nile No. 1,425","1425",Replacer.ReplaceText,{"WNNV Total Cases"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","Virus West Nile Rate 0.44","0.44",Replacer.ReplaceText,{"WNNV Rate"}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Replaced Value3",{{"Year", Int64.Type}, {"WNNV Rate", type number}, {"WNNV Total Cases", Int64.Type}}),
+    #"Filtered Rows" = Table.SelectRows(#"Changed Type2", each ([State] <> "East North Central" and [State] <> "East South Central" and [State] <> "Middle Atlantic" and [State] <> "Mountain" and [State] <> "New England" and [State] <> "Pacific" and [State] <> "South Atlantic" and [State] <> "West North Central" and [State] <> "West South Central"))
+in
+    #"Filtered Rows"
+```
+</details> 
+
+<details>
+  <summary>CDC 2018 Data</summary>
+
+**Table I. Total_WNV_2018**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/68/wr/mm6831a1.htm?s_cid=mm6831a1_w")),
+    Data0 = Source{0}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Characteristic", type text}, {"Virus, no. (%) West Nile* (N = 2,647)", type text}, {"Virus, no. (%) La Crosse (N = 86)", type text}, {"Virus, no. (%) Jamestown Canyon (N = 41)", type text}, {"Virus, no. (%) Powassan (N = 21)", type text}, {"Virus, no. (%) St. Louis encephalitis (N = 8)", type text}, {"Virus, no. (%) Eastern equine encephalitis (N = 6)", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Virus, no. (%) La Crosse (N = 86)", "Virus, no. (%) Jamestown Canyon (N = 41)", "Virus, no. (%) Powassan (N = 21)", "Virus, no. (%) St. Louis encephalitis (N = 8)", "Virus, no. (%) Eastern equine encephalitis (N = 6)"}),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Removed Columns", "Virus, no. (%) West Nile* (N = 2,647)", Splitter.SplitTextByEachDelimiter({" "}, QuoteStyle.Csv, true), {"Virus, no. (%) West Nile* (N = 2,647).1", "Virus, no. (%) West Nile* (N = 2,647).2"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Split Column by Delimiter",{{"Virus, no. (%) West Nile* (N = 2,647).1", type text}, {"Virus, no. (%) West Nile* (N = 2,647).2", type text}}),
+    #"Added Custom" = Table.AddColumn(#"Changed Type1", "Year", each 2018),
+    #"Removed Top Rows" = Table.Skip(#"Added Custom",1),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Removed Top Rows",{{"Year", Int64.Type}, {"Virus, no. (%) West Nile* (N = 2,647).1", Int64.Type}}),
+    #"Removed Errors" = Table.RemoveRowsWithErrors(#"Changed Type2", {"Virus, no. (%) West Nile* (N = 2,647).1", "Virus, no. (%) West Nile* (N = 2,647).2", "Characteristic", "Year"}),
+    #"Replaced Value" = Table.ReplaceValue(#"Removed Errors","18–59","18-59",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","January–March","January-March",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","April–June","April-June",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","July–September","July-September",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","October–December","October-December",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","Encephalitis","Neuroinvasive-encephalitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","Meningitis","Neuroinvasive-meningitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value7" = Table.ReplaceValue(#"Replaced Value6","Acute flaccid paralysis","Neuroinvasive-acute flaccid paralysis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value8" = Table.ReplaceValue(#"Replaced Value7","Unspecified","Neuroinvasive-unspecified",Replacer.ReplaceText,{"Characteristic"}),
+    #"Renamed Columns" = Table.RenameColumns(#"Replaced Value8",{{"Virus, no. (%) West Nile* (N = 2,647).1", "WNV Total Cases"}, {"Virus, no. (%) West Nile* (N = 2,647).2", "WNV Case %"}})
+in
+    #"Renamed Columns"
+```
+
+**Table II. WNNV_2018**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/68/wr/mm6831a1.htm?s_cid=mm6831a1_w")),
+    Data1 = Source{1}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data1,{{"U.S. Census division/State", type text}, {"Virus, no. (rate) West Nile", type text}, {"Virus, no. (rate) La Crosse", type text}, {"Virus, no. (rate) Jamestown Canyon", type text}, {"Virus, no. (rate) Powassan", type text}, {"Virus, no. (rate) St. Louis encephalitis", type text}, {"Virus, no. (rate) Eastern equine encephalitis", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Virus, no. (rate) La Crosse", "Virus, no. (rate) Jamestown Canyon", "Virus, no. (rate) Powassan", "Virus, no. (rate) St. Louis encephalitis", "Virus, no. (rate) Eastern equine encephalitis"}),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Removed Columns", "Virus, no. (rate) West Nile", Splitter.SplitTextByEachDelimiter({" "}, QuoteStyle.Csv, true), {"Virus, no. (rate) West Nile.1", "Virus, no. (rate) West Nile.2"}),
+    #"Added Custom" = Table.AddColumn(#"Split Column by Delimiter", "Year", each 2018),
+    #"Replaced Value" = Table.ReplaceValue(#"Added Custom","—","0",Replacer.ReplaceText,{"Virus, no. (rate) West Nile.1"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value",null,"0",Replacer.ReplaceValue,{"Virus, no. (rate) West Nile.2"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","(","",Replacer.ReplaceText,{"Virus, no. (rate) West Nile.2"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2",")","",Replacer.ReplaceText,{"Virus, no. (rate) West Nile.2"}),
+    #"Renamed Columns" = Table.RenameColumns(#"Replaced Value3",{{"Virus, no. (rate) West Nile.2", "WNNV Rate"}, {"Virus, no. (rate) West Nile.1", "WNNV Total Cases"}, {"U.S. Census division/State", "State"}}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Renamed Columns",{{"Year", Int64.Type}, {"WNNV Rate", type number}, {"WNNV Total Cases", Int64.Type}}),
+    #"Filtered Rows" = Table.SelectRows(#"Changed Type1", each ([State] <> "East North Central" and [State] <> "East South Central" and [State] <> "Middle Atlantic" and [State] <> "Mountain" and [State] <> "New England" and [State] <> "Pacific" and [State] <> "South Atlantic" and [State] <> "West North Central" and [State] <> "West South Central"))
+in
+    #"Filtered Rows"
+```
+</details> 
+
+<details>
+  <summary>CDC 2019 Data</summary>
+
+**Table I. Total_WNV_2019**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/70/wr/mm7032a1.htm?s_cid=mm7032a1_w")),
+    Data0 = Source{0}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Characteristic", type text}, {"Virus type, no. (%)† West Nile #(lf)(n = 971)", type text}, {"Virus type, no. (%)† La Crosse #(lf)(n = 55)", type text}, {"Virus type, no. (%)† Jamestown Canyon #(lf)(n = 45)", type text}, {"Virus type, no. (%)† Powassan #(lf)(n = 43)", type text}, {"Virus type, no. (%)† Eastern equine encephalitis #(lf)(n = 38)", type text}, {"Virus type, no. (%)† St. Louis encephalitis #(lf)(n = 17)", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Virus type, no. (%)† La Crosse #(lf)(n = 55)", "Virus type, no. (%)† Jamestown Canyon #(lf)(n = 45)", "Virus type, no. (%)† Powassan #(lf)(n = 43)", "Virus type, no. (%)† Eastern equine encephalitis #(lf)(n = 38)", "Virus type, no. (%)† St. Louis encephalitis #(lf)(n = 17)"}),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Removed Columns", "Virus type, no. (%)† West Nile #(lf)(n = 971)", Splitter.SplitTextByEachDelimiter({" "}, QuoteStyle.Csv, true), {"Virus type, no. (%)† West Nile #(lf)(n = 971).1", "Virus type, no. (%)† West Nile #(lf)(n = 971).2"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Split Column by Delimiter",{{"Virus type, no. (%)† West Nile #(lf)(n = 971).1", type text}, {"Virus type, no. (%)† West Nile #(lf)(n = 971).2", type text}}),
+    #"Added Custom" = Table.AddColumn(#"Changed Type1", "Year", each 2019),
+    #"Removed Top Rows" = Table.Skip(#"Added Custom",1),
+    #"Renamed Columns" = Table.RenameColumns(#"Removed Top Rows",{{"Virus type, no. (%)† West Nile #(lf)(n = 971).1", "WNV Total Cases"}, {"Virus type, no. (%)† West Nile #(lf)(n = 971).2", "WNV Case %"}}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Renamed Columns",{{"Year", Int64.Type}, {"WNV Total Cases", Int64.Type}}),
+    #"Removed Errors" = Table.RemoveRowsWithErrors(#"Changed Type2", {"WNV Total Cases", "Characteristic", "WNV Case %", "Year"}),
+    #"Replaced Value" = Table.ReplaceValue(#"Removed Errors","18–59","18-59",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","Jan–Mar","January-March",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","Apr–Jun","April-June",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","Jul–Sep","July-September",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","Oct–Dec","October-December",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","Encephalitis","Neuroinvasive-encephalitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","Meningitis","Neuroinvasive-meningitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value7" = Table.ReplaceValue(#"Replaced Value6","AFP","Neuroinvasive-acute flaccid paralysis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value8" = Table.ReplaceValue(#"Replaced Value7","Unspecified","Neuroinvasive-unspecified",Replacer.ReplaceText,{"Characteristic"})
+in
+    #"Replaced Value8"
+```
+
+**Table II. WNNV_2019**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/70/wr/mm7032a1.htm?s_cid=mm7032a1_w")),
+    Data1 = Source{1}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data1,{{"U.S. Census division/ State", type text}, {"Virus type, no. (rate*) West Nile", type text}, {"Virus type, no. (rate*) La Crosse", type text}, {"Virus type, no. (rate*) Jamestown Canyon", type text}, {"Virus type, no. (rate*) Powassan", type text}, {"Virus type, no. (rate*) Eastern equine encephalitis", type text}, {"Virus type, no. (rate*) St. Louis encephalitis", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Virus type, no. (rate*) La Crosse", "Virus type, no. (rate*) Jamestown Canyon", "Virus type, no. (rate*) Powassan", "Virus type, no. (rate*) Eastern equine encephalitis", "Virus type, no. (rate*) St. Louis encephalitis"}),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Removed Columns", "Virus type, no. (rate*) West Nile", Splitter.SplitTextByEachDelimiter({" "}, QuoteStyle.Csv, true), {"Virus type, no. (rate*) West Nile.1", "Virus type, no. (rate*) West Nile.2"}),
+    #"Added Custom" = Table.AddColumn(#"Split Column by Delimiter", "Year", each 2019),
+    #"Replaced Value" = Table.ReplaceValue(#"Added Custom","(","",Replacer.ReplaceText,{"Virus type, no. (rate*) West Nile.2"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value",")","",Replacer.ReplaceText,{"Virus type, no. (rate*) West Nile.2"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","—","0",Replacer.ReplaceText,{"Virus type, no. (rate*) West Nile.1"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2",null,"0",Replacer.ReplaceValue,{"Virus type, no. (rate*) West Nile.2"}),
+    #"Renamed Columns" = Table.RenameColumns(#"Replaced Value3",{{"Virus type, no. (rate*) West Nile.1", "WNNV Total Cases"}, {"Virus type, no. (rate*) West Nile.2", "WNNV Rate"}, {"U.S. Census division/ State", "State"}}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Renamed Columns",{{"WNNV Total Cases", Int64.Type}, {"WNNV Rate", type number}, {"Year", Int64.Type}}),
+    #"Filtered Rows" = Table.SelectRows(#"Changed Type1", each ([State] <> "East North Central" and [State] <> "East South Central" and [State] <> "Middle Atlantic" and [State] <> "Mountain" and [State] <> "New England" and [State] <> "Pacific" and [State] <> "South Atlantic" and [State] <> "West North Central" and [State] <> "West South Central"))
+in
+    #"Filtered Rows"
+```
+</details> 
+
+<details>
+  <summary>CDC 2020 Data</summary>
+
+**Table I. Total_WNV_2020**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/71/wr/mm7118a3.htm?s_cid=mm7118a3_w")),
+    Data0 = Source{0}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Characteristic", type text}, {"Virus type,* no. (%) of cases West Nile #(lf)(n = 731)", type text}, {"Virus type,* no. (%) of cases La Crosse #(lf)(n = 88)", type text}, {"Virus type,* no. (%) of cases Powassan #(lf)(n = 21)", type text}, {"Virus type,* no. (%) of cases St. Louis encephalitis #(lf)(n = 16)", type text}, {"Virus type,* no. (%) of cases Eastern equine encephalitis #(lf)(n = 13)", type text}, {"Virus type,* no. (%) of cases Jamestown Canyon #(lf)(n = 13)", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Virus type,* no. (%) of cases La Crosse #(lf)(n = 88)", "Virus type,* no. (%) of cases Powassan #(lf)(n = 21)", "Virus type,* no. (%) of cases St. Louis encephalitis #(lf)(n = 16)", "Virus type,* no. (%) of cases Eastern equine encephalitis #(lf)(n = 13)", "Virus type,* no. (%) of cases Jamestown Canyon #(lf)(n = 13)"}),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Removed Columns", "Virus type,* no. (%) of cases West Nile #(lf)(n = 731)", Splitter.SplitTextByEachDelimiter({" "}, QuoteStyle.Csv, true), {"Virus type,* no. (%) of cases West Nile #(lf)(n = 731).1", "Virus type,* no. (%) of cases West Nile #(lf)(n = 731).2"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Split Column by Delimiter",{{"Virus type,* no. (%) of cases West Nile #(lf)(n = 731).1", type text}, {"Virus type,* no. (%) of cases West Nile #(lf)(n = 731).2", type text}}),
+    #"Added Custom" = Table.AddColumn(#"Changed Type1", "Year", each 2020),
+    #"Renamed Columns" = Table.RenameColumns(#"Added Custom",{{"Virus type,* no. (%) of cases West Nile #(lf)(n = 731).2", "WNV Case %"}, {"Virus type,* no. (%) of cases West Nile #(lf)(n = 731).1", "WNV Total Cases"}}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Renamed Columns",{{"Year", Int64.Type}, {"WNV Total Cases", Int64.Type}}),
+    #"Removed Errors" = Table.RemoveRowsWithErrors(#"Changed Type2", {"Characteristic", "WNV Total Cases", "WNV Case %", "Year"}),
+    #"Replaced Value" = Table.ReplaceValue(#"Removed Errors","18–59","18-59",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","Jan–Mar","January-March",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","Apr–Jun","April-June",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","Jul–Sep","July-September",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","Oct–Dec","October-December",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","Encephalitis","Neuroinvasive-encephalitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","Meningitis","Neuroinvasive-meningitis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value7" = Table.ReplaceValue(#"Replaced Value6","AFP","Neuroinvasive-acute flaccid paralysis",Replacer.ReplaceText,{"Characteristic"}),
+    #"Replaced Value8" = Table.ReplaceValue(#"Replaced Value7","Unspecified","Neuroinvasive-unspecified",Replacer.ReplaceText,{"Characteristic"})
+in
+    #"Replaced Value8"
+```
+
+**Table II. WNNV_2020**
+```
+let
+    Source = Web.Page(Web.Contents("https://www.cdc.gov/mmwr/volumes/71/wr/mm7118a3.htm?s_cid=mm7118a3_w")),
+    Data1 = Source{1}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Data1,{{"U.S. Census Bureau division/State", type text}, {"Cases, by virus type, no. (rate)* West Nile", type text}, {"Cases, by virus type, no. (rate)* La Crosse", type text}, {"Cases, by virus type, no. (rate)* Powassan", type text}, {"Cases, by virus type, no. (rate)* St. Louis encephalitis", type text}, {"Cases, by virus type, no. (rate)* Eastern equine encephalitis", type text}, {"Cases, by virus type, no. (rate)* Jamestown Canyon", type text}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Cases, by virus type, no. (rate)* La Crosse", "Cases, by virus type, no. (rate)* Powassan", "Cases, by virus type, no. (rate)* St. Louis encephalitis", "Cases, by virus type, no. (rate)* Eastern equine encephalitis", "Cases, by virus type, no. (rate)* Jamestown Canyon"}),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Removed Columns", "Cases, by virus type, no. (rate)* West Nile", Splitter.SplitTextByEachDelimiter({" "}, QuoteStyle.Csv, true), {"Cases, by virus type, no. (rate)* West Nile.1", "Cases, by virus type, no. (rate)* West Nile.2"}),
+    #"Added Custom" = Table.AddColumn(#"Split Column by Delimiter", "Year", each 2020),
+    #"Replaced Value" = Table.ReplaceValue(#"Added Custom","—","0",Replacer.ReplaceText,{"Cases, by virus type, no. (rate)* West Nile.1"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value",null,"0",Replacer.ReplaceValue,{"Cases, by virus type, no. (rate)* West Nile.2"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","(","",Replacer.ReplaceText,{"Cases, by virus type, no. (rate)* West Nile.2"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2",")","",Replacer.ReplaceText,{"Cases, by virus type, no. (rate)* West Nile.2"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Replaced Value3",{{"Year", Int64.Type}, {"Cases, by virus type, no. (rate)* West Nile.2", type number}, {"Cases, by virus type, no. (rate)* West Nile.1", Int64.Type}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Changed Type1",{{"Cases, by virus type, no. (rate)* West Nile.1", "WNNV Total Cases"}, {"Cases, by virus type, no. (rate)* West Nile.2", "WNNV Rate"}, {"U.S. Census Bureau division/State", "State"}}),
+    #"Filtered Rows" = Table.SelectRows(#"Renamed Columns", each ([State] <> "East North Central" and [State] <> "East South Central" and [State] <> "Middle Atlantic" and [State] <> "Mountain" and [State] <> "New England" and [State] <> "Pacific" and [State] <> "South Atlantic" and [State] <> "West North Central" and [State] <> "West South Central"))
+in
+    #"Filtered Rows"
+```
+</details> 
+
+
+#### CDC WNV Table Merge and Data Verification
+
+All cleaned and transformed CDC data sets were collectively merged into two data frames on RStudio, maintaining the same formatting as the two tables contained in each Excel Workbook.  Both data frames were written as .xlsx files after further cleaning and verification were completed as outlined below.
+
+___
+
+##### **WNV Summary Table**
+
++ Initializing the library packages needed, as well as merging and initial cleaning of WNV summary table.  An overview of the initial merged table was done through glimpse().
+
+```{r, message=FALSE, class.source='fold-show'}
+library(readxl)
+library(here)
+library(tidyverse)
+library(janitor)
+library(RSQLite)
+library(DT)
+
+WNV_2010 <- read_excel(here("CDC_WNV_2010.xlsx"), sheet=1)
+WNV_2011 <- read_excel(here("CDC_WNV_2011.xlsx"), sheet=1)
+WNV_2012 <- read_excel(here("CDC_WNV_2012.xlsx"), sheet=1)
+WNV_2013 <- read_excel(here("CDC_WNV_2013.xlsx"), sheet=1)
+WNV_2014 <- read_excel(here("CDC_WNV_2014.xlsx"), sheet=1)
+WNV_2015 <- read_excel(here("CDC_WNV_2015.xlsx"), sheet=1)
+WNV_2016 <- read_excel(here("CDC_WNV_2016.xlsx"), sheet=1)
+WNV_2017 <- read_excel(here("CDC_WNV_2017.xlsx"), sheet=1)
+WNV_2018 <- read_excel(here("CDC_WNV_2018.xlsx"), sheet=1)
+WNV_2019 <- read_excel(here("CDC_WNV_2019.xlsx"), sheet=1)
+WNV_2020 <- read_excel(here("CDC_WNV_2020.xlsx"), sheet=1)
+
+merged_WNV_2010_2020 <- bind_rows(WNV_2010, WNV_2011, WNV_2012, WNV_2013, 
+                                  WNV_2014, WNV_2015, WNV_2016, WNV_2017, 
+                                  WNV_2018, WNV_2019, WNV_2020)
+
+cleaned_WNV_2010_2020 <- clean_names(merged_WNV_2010_2020)
+
+filtered_WNV_2010_2020 <- cleaned_WNV_2010_2020 %>% 
+  filter(characteristic!='Female', characteristic!='Male') %>% 
+  select(characteristic, wnv_total_cases, year)
+
+glimpse(filtered_WNV_2010_2020)
+```
+
++ Checking to see if the total observations makes sense for each characteristic, with 11 expected for 2010-2020 coverage.  `Neuroinvasive`, `Neuroinvasive-other`, and `Neuroinvasive-unspecified` need to be further examined since they don't meet the criteria based on the output results below.  
+
+```{r}
+filtered_WNV_2010_2020 %>% 
+  count(characteristic, sort=TRUE)
+```
+
++ Checking all neuroinvasive subcategories and the years they cover.  Verified that those with 11 observations covered 2010-2020 as shown by output results.
+
+```{r}
+total_observations_neuroinvasive <- filtered_WNV_2010_2020 %>%
+  select(characteristic, wnv_total_cases, year) %>% 
+  filter(grepl("Neuroinvasive", characteristic)) %>% 
+  arrange(characteristic)
+
+total_observations_neuroinvasive
+```
+
++ Checking to see if the summation of neuroinvasive subcategories matches `Neuroinvasive` for 2012-2020 (`Neuroinvasive` missing as a category in 2010, 2011, 2017 source tables).
+
+```{r}
+total_neuroinvasive_reported <- filtered_WNV_2010_2020 %>%
+  filter(characteristic=="Neuroinvasive") %>% 
+  select(wnv_total_cases, year) %>% 
+  rename(total_neuroinvasive_reported=wnv_total_cases)
+
+neuroinvasive_subcategory_total <- filtered_WNV_2010_2020 %>%
+  filter(grepl("Neuroinvasive", characteristic)) %>%
+  filter(characteristic!="Neuroinvasive") %>%
+  group_by(year) %>% 
+  summarize(neuroinvasive_subcategory_total=sum(wnv_total_cases)) %>% 
+  ungroup()
+
+neuroinvasive_comparison <- merge(total_neuroinvasive_reported, neuroinvasive_subcategory_total, by="year")
+
+neuroinvasive_comparison
+```
+
++ There is a discrepancy on neuroinvasive cases for 2015, with the total neuroinvasive cases (1455) reported by the CDC compared against the summation of neuroinvasive categories (1528) reported by the CDC.  This discrepancy was due to the double-counting of cases.  The 2015 MMWR report states that 686 cases were reported as encephalitis and 613 cases were reported as meningitis, with 91 out of 118 cases of acute flaccid paralysis also having encephalitis or meningitis.
+
++ Summing the neuroinvasive cases reported by each state per the MMWR report verified the total neuroinvasive cases as 1455.  This double-counting issue was not found with all other CDC MMWR reports for the period range of 2010-2020. All other neuroinvasive subcategory totals were verified against state neuroinvasive summation totals reported. The 1455 total neuroinvasive cases for 2015 will be used going forward with this analysis.  Neuroinvasive subcategory comparison by year will not be explored in this analysis.
+
++ Creating a new data frame with neuroinvasive totals to use for this analysis, where neuroinvasive subcategories totals are used for 2010-2020 except for 2015. The value listed for 2015 will be replaced with 1455 as described above.
+
+```{r, rows.print=14}
+neuroinvasive_total_2010_2020 <- neuroinvasive_subcategory_total %>%
+  cbind(characteristic=c("Neuroinvasive_total", "Neuroinvasive_total", "Neuroinvasive_total", "Neuroinvasive_total", "Neuroinvasive_total", "Neuroinvasive_total", "Neuroinvasive_total", "Neuroinvasive_total", "Neuroinvasive_total", "Neuroinvasive_total", "Neuroinvasive_total")) %>% 
+  rename(wnv_total_cases = neuroinvasive_subcategory_total) %>% 
+  mutate(wnv_total_cases = ifelse(year==2015 & characteristic=="Neuroinvasive_total", 1455, wnv_total_cases))
+
+neuroinvasive_total_2010_2020
+```
+
++ Adding neuroinvasive totals data frame to the merged table and filtering out old `Neuroinvasive` category.  121 rows is expected for output merged table with 11 variables in `Characteristic` and 11 variables in `year`.
+
+```{r}
+WNV_summary_2010_2020 <- filtered_WNV_2010_2020 %>%
+  bind_rows(neuroinvasive_total_2010_2020) %>% 
+  filter(characteristic!="Neuroinvasive", 
+         characteristic!="Neuroinvasive-encephalitis",
+         characteristic!="Neuroinvasive-meningitis",
+         characteristic!="Neuroinvasive-acute flaccid paralysis",
+         characteristic!="Neuroinvasive-unspecified",
+         characteristic!="Neuroinvasive-other") %>% 
+  arrange(year)
+
+DT::datatable(WNV_summary_2010_2020, options=list(lengthChange=FALSE, searching=FALSE, pageLength=11, columnDefs=list(list(className='dt-center', targets=2:3))))
+```
+
++ Checking for nulls in final merged table using SQLite. 0 records returned on output.
+
+```{r, echo=FALSE}
+conn <- dbConnect(RSQLite::SQLite(), "WNV_Analysis.db")
+
+dbWriteTable(conn, "WNV_summary_2010_2020", WNV_summary_2010_2020, overwrite=TRUE)
+```
+
+```{sql connection=conn, max.print=NA, class.source='fold-show'}
+SELECT * FROM WNV_summary_2010_2020
+WHERE characteristic IS NULL OR wnv_total_cases IS NULL OR year IS NULL 
+```
+
++ Checking for duplicate records in final merged table using SQLite. 0 records returned on output.
+
+```{sql connection=conn, max.print=NA, class.source='fold-show'}
+SELECT characteristic,
+       year,
+       COUNT(*) AS total_observations
+FROM WNV_summary_2010_2020
+GROUP BY characteristic, year
+HAVING COUNT(*) > 1
+```
+
+```{r, echo=FALSE}
+dbDisconnect(conn)
+```
+___
+
+##### **West Nile Virus Neuroinvasive (WNNV) State Cases Table**
+
++ Merging and cleaning of WNNV state cases table.  An overview of the merged table was done through glimpse().
+
+```{r, class.source='fold-show'}
+WNNV_state_cases_2010 <- read_excel(here("CDC_WNV_2010.xlsx"), sheet=2)
+WNNV_state_cases_2011 <- read_excel(here("CDC_WNV_2011.xlsx"), sheet=2)
+WNNV_state_cases_2012 <- read_excel(here("CDC_WNV_2012.xlsx"), sheet=2)
+WNNV_state_cases_2013 <- read_excel(here("CDC_WNV_2013.xlsx"), sheet=2)
+WNNV_state_cases_2014 <- read_excel(here("CDC_WNV_2014.xlsx"), sheet=2)
+WNNV_state_cases_2015 <- read_excel(here("CDC_WNV_2015.xlsx"), sheet=2)
+WNNV_state_cases_2016 <- read_excel(here("CDC_WNV_2016.xlsx"), sheet=2)
+WNNV_state_cases_2017 <- read_excel(here("CDC_WNV_2017.xlsx"), sheet=2)
+WNNV_state_cases_2018 <- read_excel(here("CDC_WNV_2018.xlsx"), sheet=2)
+WNNV_state_cases_2019 <- read_excel(here("CDC_WNV_2019.xlsx"), sheet=2)
+WNNV_state_cases_2020 <- read_excel(here("CDC_WNV_2020.xlsx"), sheet=2)
+
+merged_WNNV_state_cases_2010_2020 <- bind_rows(WNNV_state_cases_2010, WNNV_state_cases_2011, WNNV_state_cases_2012, WNNV_state_cases_2013, WNNV_state_cases_2014, WNNV_state_cases_2015, WNNV_state_cases_2016, WNNV_state_cases_2017, WNNV_state_cases_2018, WNNV_state_cases_2019, WNNV_state_cases_2020)
+
+WNNV_state_cases_2010_2020 <- clean_names(merged_WNNV_state_cases_2010_2020)
+
+glimpse(WNNV_state_cases_2010_2020)
+```
+
++ Checking to see if the total observations makes sense for two categories, `state` and `year`.  Verified that all states had 11 observations for 2010-2020 and that all years had 52 observations (includes `United States` and `District of Columbia`).
+
+```{r, rows.print=14}
+WNNV_state_cases_2010_2020 %>% count(state)
+
+WNNV_state_cases_2010_2020 %>% count(year)
+```
+
++ Checking for nulls in final merged table using SQLite. 0 records returned on output.
+
+```{r, echo=FALSE}
+conn <- dbConnect(RSQLite::SQLite(), "WNV_Analysis.db")
+
+dbWriteTable(conn, "WNNV_state_cases_2010_2020", WNNV_state_cases_2010_2020, overwrite=TRUE)
+```
+
+```{sql connection=conn, max.print=NA, class.source='fold-show'}
+SELECT * FROM WNNV_state_cases_2010_2020
+WHERE state IS NULL OR wnnv_total_cases IS NULL OR wnnv_rate IS NULL OR year IS NULL
+```
+
++ Checking for duplicate records in final merged table using SQLite.  0 records returned on output.
+
+```{sql connection=conn, max.print=NA, class.source='fold-show'}
+SELECT state, 
+       year, 
+       COUNT(*) AS total_observations
+FROM WNNV_state_cases_2010_2020
+GROUP BY state, year
+HAVING COUNT(*) > 1
+```
+
+```{r, echo=FALSE}
+dbDisconnect(conn)
+```
+
+___
+
+#### Temperature
+
+All data sets were downloaded as .csv files and converted to Excel Workbooks as described under "Data Sources" section.  Each Excel Workbook was saved using the file name format **2010-2020_raw_data_insert-state_temp** under directory **Temperature_2010-2020**.  All raw data files were checked to ensure temperature unit was consistent as Fahrenheit for 2010-2020.  
+
+A new Excel Workbook was generated, and all raw state data files were handled as separate new queries under Power Query for the cleaning and transformation process.  All raw data files were processed using the same steps.  See below for Power Query code of the processing steps using Alabama as an example.  
+
+After the cleaning and transformation process was finished for all states, these queries were collectively appended as new to generate a merged table under Power Query.  This merged table was then imported into RStudio for a final cleaning using janitor package's clean_names() function.  The resulting data frame was written as an .xlsx file, **united_states_temperature_2010_2020**, which will be used for this analysis. 
+
+<details>
+  <summary>Cleaning and Transformation Example - Alabama</summary>
+```
+let
+    Source = Excel.Workbook(File.Contents(file_path & "\Temperature_2010-2020\2010-2020_raw_data_alabama_temp.xlsx"), null, true),
+    #"2010-2020_raw_data_alabama_temp_Sheet" = Source{[Item="2010-2020_raw_data_alabama_temp",Kind="Sheet"]}[Data],
+    #"Promoted Headers" = Table.PromoteHeaders(#"2010-2020_raw_data_alabama_temp_Sheet", [PromoteAllScalars=true]),
+    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"Alabama", type any}, {" Average Temperature", type any}, {"Column3", type any}}),
+    #"Added Custom" = Table.AddColumn(#"Changed Type", "State", each "Alabama"),
+    #"Renamed Columns" = Table.RenameColumns(#"Added Custom",{{"Column3", "Temperature Anomaly (F)"}, {" Average Temperature", "Average Temperature (F)"}}),
+    #"Removed Top Rows" = Table.Skip(#"Renamed Columns",4),
+    #"Split Column by Position" = Table.SplitColumn(Table.TransformColumnTypes(#"Removed Top Rows", {{"Alabama", type text}}, "en-US"), "Alabama", Splitter.SplitTextByPositions({0, 4}, false), {"Alabama.1", "Alabama.2"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Split Column by Position",{{"Alabama.1", Int64.Type}, {"Alabama.2", Int64.Type}}),
+    #"Renamed Columns1" = Table.RenameColumns(#"Changed Type1",{{"Alabama.1", "Year"}, {"Alabama.2", "Month"}}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Renamed Columns1",{{"Average Temperature (F)", type number}, {"Temperature Anomaly (F)", type number}, {"State", type text}})
+in
+    #"Changed Type2"
+    
+/* Note that "file_path" refers to a new parameter established (named as "file_path") where the current value field is set as the common file path containing the folder "Temperature_2010-2020".  This enables sharing of the data folder to users interested in viewing the raw data and the queries associated. */
+```
+</details>
+
+<details>
+  <summary>Merged Table</summary>
+
+```
+let
+    Source = Table.Combine({#"2010-2020_raw_data_alabama_temp", #"2010-2020_raw_data_alaska_temp", #"2010-2020_raw_data_arizona_temp", #"2010-2020_raw_data_arkansas_tem", #"2010-2020_raw_data_california_t", #"2010-2020_raw_data_colorado_tem", #"2010-2020_raw_data_delaware_tem", #"2010-2020_raw_data_connecticut_", #"2010-2020_raw_data_florida_temp", #"2010-2020_raw_data_georgia_temp", #"2010-2020_raw_data_idaho_temp", #"2010-2020_raw_data_illinois_tem", #"2010-2020_raw_data_indiana_temp", #"2010-2020_raw_data_iowa_temp", #"2010-2020_raw_data_kansas_temp", #"2010-2020_raw_data_kentucky_tem", #"2010-2020_raw_data_louisiana_te", #"2010-2020_raw_data_maine_temp", #"2010-2020_raw_data_maryland_tem", #"2010-2020_raw_data_massachusett", #"2010-2020_raw_data_michigan_tem", #"2010-2020_raw_data_minnesota_te", #"2010-2020_raw_data_mississippi_", #"2010-2020_raw_data_missouri_tem", #"2010-2020_raw_data_montana_temp", #"2010-2020_raw_data_nebraska_tem", #"2010-2020_raw_data_nevada_temp", #"2010-2020_raw_data_new_hampshir", #"2010-2020_raw_data_new_jersey", #"2010-2020_raw_data_new_mexico", #"2010-2020_raw_data_new_york_tem", #"2010-2020_raw_data_north_caroli", #"2010-2020_raw_data_north_dakota", #"2010-2020_raw_data_ohio_temp", #"2010-2020_raw_data_oklahoma_tem", #"2010-2020_raw_data_oregon_temp", #"2010-2020_raw_data_pennsylvania", #"2010-2020_raw_data_rhode_island", #"2010-2020_raw_data_south_caroli", #"2010-2020_raw_data_south_dakota", #"2010-2020_raw_data_tennessee_te", #"2010-2020_raw_data_texas_temp", #"2010-2020_raw_data_utah_temp", #"2010-2020_raw_data_vermont_temp", #"2010-2020_raw_data_virginia_tem", #"2010-2020_raw_data_washington_t", #"2010-2020_raw_data_west_virgini", #"2010-2020_raw_data_wisconsin_te", #"2010-2020_raw_data_wyoming_temp"})
+in
+    Source
+```
+</details>
+
+#### Temperature Data Verification
+
+Data verification was performed on the finalized merged table through SQLite in RStudio as described below.
+
++ Initializing the library packages needed, as well as viewing the finalized merged table through glimpse().
+
+```{r, message=FALSE, class.source='fold-show'}
+library(readxl)
+library(here)
+library(tidyverse)
+library(janitor)
+library(RSQLite)
+
+united_states_temperature_2010_2020 <- read_xlsx(here("united_states_temperature_2010_2020.xlsx"))
+
+glimpse(united_states_temperature_2010_2020)
+```
+
++ Counting unique variables for `month`, `year`, and `state` columns.  Output results are as expected.
+
+```{r, echo=FALSE}
+conn <- dbConnect(RSQLite::SQLite(), "WNV_Analysis.db")
+
+dbWriteTable(conn, "united_states_temperature_2010_2020", united_states_temperature_2010_2020, overwrite=TRUE)
+```
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT COUNT(DISTINCT month) AS distinct_months,
+       COUNT(DISTINCT year) AS distinct_years,
+       COUNT(DISTINCT state) AS distinct_states
+FROM united_states_temperature_2010_2020
+```
+
++ Confirming no `Hawaii` or `District of Columbia` variables in `state` column.
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT state
+FROM united_states_temperature_2010_2020
+WHERE state=="Hawaii" OR state=="District of Columbia"
+```
+
++ Checking for nulls in the finalized merged table. 0 records returned on output.
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT * FROM united_states_temperature_2010_2020
+WHERE year IS NULL OR month IS NULL OR average_temperature_f IS NULL OR temperature_anomaly_f IS NULL OR state IS NULL
+```
+
++ Checking for duplicates in the finalized merged table. 0 records returned for average_temperature_f and temperature_anomaly_f observations on outputs.
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT
+  year,
+  month,
+  state,
+  COUNT(average_temperature_f) AS number_of_observations
+FROM united_states_temperature_2010_2020
+GROUP BY
+  year,
+  month,
+  state
+HAVING COUNT(*) > 1
+```
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT
+  year,
+  month,
+  state,
+  COUNT(temperature_anomaly_f) AS number_of_observations
+FROM united_states_temperature_2010_2020
+GROUP BY
+  year,
+  month,
+  state
+HAVING COUNT(*) > 1
+```
+
+```{r, echo=FALSE}
+dbDisconnect(conn)
+```
+
+#### Precipitation
+
+All data sets were downloaded as .csv files and converted to Excel Workbooks as described under "Data Sources" section.  Each Excel Workbook was saved using the file name format **2010-2020_raw_data_insert-state_precip** under directory **Precipitation_2010-2020**.  All raw data files were checked to ensure precipitation unit was consistent as inches for 2010-2020.  
+
+A new Excel Workbook was generated, and all raw state data files were handled as separate new queries under Power Query for the cleaning and transformation process.  All raw data files were processed using the same steps.  See below for Power Query code of the processing steps using Alabama as an example.  
+
+After the cleaning and transformation process was finished for all states, these queries were collectively appended as new to generate a merged table under Power Query.  This merged table was then imported into RStudio for a final cleaning using janitor package's clean_names() function.  The resulting data frame was written as an .xlsx file, **united_states_precipitation_2010_2020**, which will be used for this analysis.
+
+
+<details>
+  <summary>Cleaning and Transformation Example - Alabama</summary>
+
+```
+let
+    Source = Excel.Workbook(File.Contents(file_path & "\Precipitation_2010-2020\2010-2020_raw_data_alabama_precip.xlsx"), null, true),
+    #"2010-2020_raw_data_alabama_prec_Sheet" = Source{[Item="2010-2020_raw_data_alabama_prec",Kind="Sheet"]}[Data],
+    #"Promoted Headers" = Table.PromoteHeaders(#"2010-2020_raw_data_alabama_prec_Sheet", [PromoteAllScalars=true]),
+    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"Alabama", type any}, {" Precipitation", type any}, {"Column3", type any}}),
+    #"Added Custom" = Table.AddColumn(#"Changed Type", "State", each "Alabama"),
+    #"Renamed Columns" = Table.RenameColumns(#"Added Custom",{{"Column3", "Precipitation Anomaly (Inches)"}, {" Precipitation", "Precipitation (Inches)"}}),
+    #"Removed Top Rows" = Table.Skip(#"Renamed Columns",4),
+    #"Split Column by Position" = Table.SplitColumn(Table.TransformColumnTypes(#"Removed Top Rows", {{"Alabama", type text}}, "en-US"), "Alabama", Splitter.SplitTextByPositions({0, 4}, false), {"Alabama.1", "Alabama.2"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Split Column by Position",{{"Alabama.1", Int64.Type}, {"Alabama.2", Int64.Type}}),
+    #"Renamed Columns1" = Table.RenameColumns(#"Changed Type1",{{"Alabama.1", "Year"}, {"Alabama.2", "Month"}}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Renamed Columns1",{{"Precipitation (Inches)", type number}, {"Precipitation Anomaly (Inches)", type number}, {"State", type text}})
+in
+    #"Changed Type2"
+    
+/* Note that "file_path" refers to a new parameter established (named as "file_path") where the current value field is set as the common file path containing the folder "Precipitation_2010-2020".  This enables sharing of the data folder to users interested in viewing the raw data and the queries associated. */
+```
+</details>
+
+<details>
+  <summary>Merged Table</summary>
+  
+```
+let
+    Source = Table.Combine({#"2010-2020_raw_data_alabama_prec", #"2010-2020_raw_data_alaska_preci", #"2010-2020_raw_data_arizona_prec", #"2010-2020_raw_data_arkansas_pre", #"2010-2020_raw_data_california_p", #"2010-2020_raw_data_colorado_pre", #"2010-2020_raw_data_connecticut_", #"2010-2020_raw_data_delaware_pre", #"2010-2020_raw_data_florida_prec", #"2010-2020_raw_data_georgia_prec", #"2010-2020_raw_data_idaho_precip", #"2010-2020_raw_data_illinois_pre", #"2010-2020_raw_data_indiana_prec", #"2010-2020_raw_data_iowa_precip", #"2010-2020_raw_data_kansas_preci", #"2010-2020_raw_data_kentucky_pre", #"2010-2020_raw_data_louisiana_pr", #"2010-2020_raw_data_maine_precip", #"2010-2020_raw_data_maryland_pre", #"2010-2020_raw_data_massachusett", #"2010-2020_raw_data_michigan_pre", #"2010-2020_raw_data_minnesota_pr", #"2010-2020_raw_data_mississippi_", #"2010-2020_raw_data_missouri_pre", #"2010-2020_raw_data_montana_prec", #"2010-2020_raw_data_nebraska_pre", #"2010-2020_raw_data_nevada_preci", #"2010-2020_raw_data_new_hampshir", #"2010-2020_raw_data_new_jersey_p", #"2010-2020_raw_data_new_mexico_p", #"2010-2020_raw_data_new_york_pre", #"2010-2020_raw_data_north_caroli", #"2010-2020_raw_data_north_dakota", #"2010-2020_raw_data_ohio_precip", #"2010-2020_raw_data_oklahoma_pre", #"2010-2020_raw_data_oregon_preci", #"2010-2020_raw_data_pennsylvania", #"2010-2020_raw_data_rhode_island", #"2010-2020_raw_data_south_caroli", #"2010-2020_raw_data_south_dakota", #"2010-2020_raw_data_tennessee_pr", #"2010-2020_raw_data_texas_precip", #"2010-2020_raw_data_utah_precip", #"2010-2020_raw_data_vermont_prec", #"2010-2020_raw_data_virginia_pre", #"2010-2020_raw_data_washington_p", #"2010-2020_raw_data_west_virgini", #"2010-2020_raw_data_wisconsin_pr", #"2010-2020_raw_data_wyoming_prec"})
+in
+    Source
+```
+</details>
+
+
+#### Precipitation Data Verification
+
+Data verification on the finalized merged table was performed through SQLite in RStudio as described below.
+
++ Initializing the library packages needed, as well as viewing the finalized merged table through glimpse().
+
+```{r, message=FALSE, class.source='fold-show'}
+library(readxl)
+library(here)
+library(tidyverse)
+library(janitor)
+library(RSQLite)
+
+united_states_precipitation_2010_2020 <- read_xlsx(here("united_states_precipitation_2010_2020.xlsx"))
+
+glimpse(united_states_precipitation_2010_2020)
+```
+
++ Counting unique variables for `month`, `year`, and `state` columns.  Output results are as expected.
+
+```{r, echo=FALSE}
+conn <- dbConnect(RSQLite::SQLite(), "WNV_Analysis.db")
+
+dbWriteTable(conn, "united_states_precipitation_2010_2020", united_states_precipitation_2010_2020, overwrite=TRUE)
+```
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT COUNT(DISTINCT month) AS distinct_months,
+       COUNT(DISTINCT year) AS distinct_years,
+       COUNT(DISTINCT state) AS distinct_states
+FROM united_states_precipitation_2010_2020
+```
+
++ Confirming no `Hawaii` or `District of Columbia` variables in `state` column.
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT state
+FROM united_states_precipitation_2010_2020
+WHERE state=="Hawaii" OR state=="District of Columbia"
+```
+
++ Checking for nulls in the finalized merged table. 0 records returned on output.
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT * FROM united_states_precipitation_2010_2020
+WHERE year IS NULL OR month IS NULL OR precipitation_inches IS NULL OR precipitation_anomaly_inches Is NULL OR state IS NULL
+```
+
++ Checking for duplicates in the finalized merged table. 0 records returned for precipitation_inches and precipitation_anomaly_inches observations on outputs.
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT
+  year,
+  month,
+  state,
+  COUNT(precipitation_inches) AS number_of_observations
+FROM united_states_precipitation_2010_2020
+GROUP BY
+  year,
+  month,
+  state
+HAVING COUNT(*) > 1
+```
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT
+  year,
+  month,
+  state,
+  COUNT(precipitation_anomaly_inches) AS number_of_observations
+FROM united_states_precipitation_2010_2020
+GROUP BY
+  year,
+  month,
+  state
+HAVING COUNT(*) > 1
+```
+
+```{r, echo=FALSE}
+dbDisconnect(conn)
+```
+
+#### Dew Point
+
+All tar.gz files for 2010-2020 were downloaded and unzipped using 7-Zip software to derive .csv files, as described under "Data Sources" section.  The file name format was retained for all directories unzipped (year).  Using a new Excel Workbook for each year, the corresponding directory was imported through Power Query, with all .csv files contained having their data sets combined and transformed into the .xlsx file.
+
+The resulting table underwent cleaning and further transformation, using processing steps as outlined in the 2010 example below, and then saved under the file name format **united_states_dewpoint_insert-year** within directory **Dewpoint_2010-2020**.  Note that all dew point measurements are in Fahrenheit units per NOAA.
+
+<details>
+  <summary>Cleaning and Transformation Example - 2010</summary>
+  
+```
+let
+    Source = Folder.Files(file_path & "\Dewpoint_2010-2020\2010"),
+    #"Filtered Hidden Files1" = Table.SelectRows(Source, each [Attributes]?[Hidden]? <> true),
+    #"Invoke Custom Function1" = Table.AddColumn(#"Filtered Hidden Files1", "Transform File", each #"Transform File"([Content])),
+    #"Renamed Columns1" = Table.RenameColumns(#"Invoke Custom Function1", {"Name", "Source.Name"}),
+    #"Removed Other Columns1" = Table.SelectColumns(#"Renamed Columns1", {"Source.Name", "Transform File"}),
+    #"Expanded Table Column1" = Table.ExpandTableColumn(#"Removed Other Columns1", "Transform File", Table.ColumnNames(#"Transform File"(#"Sample File"))),
+    #"Removed Columns" = Table.RemoveColumns(#"Expanded Table Column1",{"LATITUDE", "LONGITUDE", "ELEVATION", "TEMP", "TEMP_ATTRIBUTES", "SLP", "SLP_ATTRIBUTES", "STP", "STP_ATTRIBUTES", "VISIB", "VISIB_ATTRIBUTES", "WDSP", "WDSP_ATTRIBUTES", "MXSPD", "GUST", "MAX", "MAX_ATTRIBUTES", "MIN", "MIN_ATTRIBUTES", "PRCP", "PRCP_ATTRIBUTES", "SNDP", "FRSHTT"}),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Removed Columns", "NAME", Splitter.SplitTextByEachDelimiter({","}, QuoteStyle.Csv, false), {"NAME.1", "NAME.2"}),
+    #"Changed Type" = Table.TransformColumnTypes(#"Split Column by Delimiter",{{"NAME.1", type text}, {"NAME.2", type text}}),
+    #"Split Column by Delimiter1" = Table.SplitColumn(#"Changed Type", "NAME.2", Splitter.SplitTextByEachDelimiter({" "}, QuoteStyle.Csv, true), {"NAME.2.1", "NAME.2.2"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Split Column by Delimiter1",{{"NAME.2.1", type text}, {"NAME.2.2", type text}}),
+    #"Filtered Rows" = Table.SelectRows(#"Changed Type1", each ([NAME.2.2] = "US") and ([NAME.2.1] <> "" and [NAME.2.1] <> " PR" and [NAME.2.1] <> " VI")),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Filtered Rows",{{"STATION", type text}, {"DATE", type date}, {"DEWP", type number}, {"DEWP_ATTRIBUTES", Int64.Type}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Changed Type2",{{"Source.Name", "Source_Name"}, {"STATION", "Station_ID"}, {"DATE", "Date"}, {"NAME.1", "Station_Name"}, {"NAME.2.1", "State"}, {"NAME.2.2", "Country"}})
+in
+    #"Renamed Columns"
+    
+/* Note that "file_path" refers to a new parameter established (named as "file_path") where the current value field is set as the common file path containing the folder "Dewpoint_2010-2020".  This enables sharing of the data folder to users interested in viewing the raw data and the queries associated. */    
+```
+</details>
+
+
+#### Dew Point Table Merge and Data Verification
+
+All cleaned and transformed dew point data sets were collectively merged into a table on RStudio, maintaining the same formatting as the tables contained in each Excel Workbook.  This merged table underwent further cleaning, with data verification on the finalized merged table as outlined below.
+
++ Initializing the library packages needed, as well as merging and initial cleaning of the dew point table.  An overview of the initial merged table was done through glimpse().
+
+```{r, message=FALSE, class.source='fold-show'}
+library(readxl)
+library(tidyverse)
+library(here)
+library(janitor)
+library(lubridate)
+
+monthly_dewp_2010 <- read_excel(here("united_states_dewpoint_2010.xlsx"))
+monthly_dewp_2011 <- read_excel(here("united_states_dewpoint_2011.xlsx"))
+monthly_dewp_2012 <- read_excel(here("united_states_dewpoint_2012.xlsx"))
+monthly_dewp_2013 <- read_excel(here("united_states_dewpoint_2013.xlsx"))
+monthly_dewp_2014 <- read_excel(here("united_states_dewpoint_2014.xlsx"))
+monthly_dewp_2015 <- read_excel(here("united_states_dewpoint_2015.xlsx"))
+monthly_dewp_2016 <- read_excel(here("united_states_dewpoint_2016.xlsx"))
+monthly_dewp_2017 <- read_excel(here("united_states_dewpoint_2017.xlsx"))
+monthly_dewp_2018 <- read_excel(here("united_states_dewpoint_2018.xlsx"))
+monthly_dewp_2019 <- read_excel(here("united_states_dewpoint_2019.xlsx"))
+monthly_dewp_2020 <- read_excel(here("united_states_dewpoint_2020.xlsx"))
+
+merged_dewp_2010_2020 <- bind_rows(monthly_dewp_2010, monthly_dewp_2011, monthly_dewp_2012, monthly_dewp_2013, monthly_dewp_2014, monthly_dewp_2015, monthly_dewp_2016, monthly_dewp_2017, monthly_dewp_2018, monthly_dewp_2019, monthly_dewp_2020)
+
+cleaned_dewp_2010_2020 <- clean_names(merged_dewp_2010_2020)
+
+glimpse(cleaned_dewp_2010_2020)
+```
+
++ Total number of rows (10,217,584) for output merged table matches what is expected based on number of rows for the involved individual tables. 
+
+```{r, class.source='fold-show'}
+
+# Generating list of data frames used for the merged table.
+df_list <- list(monthly_dewp_2010, monthly_dewp_2011, monthly_dewp_2012, monthly_dewp_2013, monthly_dewp_2014, monthly_dewp_2015, monthly_dewp_2016, monthly_dewp_2017, monthly_dewp_2018, monthly_dewp_2019, monthly_dewp_2020)
+
+# Provides total number of rows per data frame.
+nrows_per_df_list <- sapply(df_list, function(x) nrow(x))
+
+nrows_per_df_list
+
+# Summation of all rows for all data frames.
+sum(nrows_per_df_list)
+```
+
++ The `date` column was separated into `year`, `month`, and `day` columns through mutate(), and `source_name`, `dewp_attributes`, and `country` columns were filtered out from the merged table.
+
+```{r}
+recleaned_dewp_2010_2020 <- cleaned_dewp_2010_2020 %>% 
+  mutate(year=year(date), month=month(date), day=day(date)) %>%
+  select(station_id, station_name, state, dewp, year, month, day)
+
+glimpse(recleaned_dewp_2010_2020)
+```
+
+```{r, echo=FALSE}
+library(RSQLite)
+
+conn <- dbConnect(RSQLite::SQLite(), "WNV_Analysis.db")
+
+dbWriteTable(conn, "recleaned_dewp_2010_2020", recleaned_dewp_2010_2020, overwrite = TRUE)
+```
+
++ Checking the minimum and maximum dew point values using SQLite.  Output results are reasonably within expectations.  Dew point values of 9999.9 are considered missing observations per NOAA.
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT
+  MIN(dewp) AS min_dewpoint,
+  MAX(CASE WHEN dewp=9999.9 THEN NULL ELSE dewp END) AS max_dewpoint,
+  SUM(CASE WHEN dewp=9999.9 THEN 1 ELSE 0 END) AS total_missing_observations
+FROM
+  recleaned_dewp_2010_2020
+```
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT * FROM recleaned_dewp_2010_2020
+WHERE
+  dewp==-97.8 OR dewp==90
+```
+
++ Checking for duplicate records in merged table using SQLite. 0 records returned on output.
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT
+  station_id,
+  station_name,
+  year,
+  month,
+  day,
+  COUNT(dewp) AS number_of_observations
+FROM recleaned_dewp_2010_2020
+GROUP BY 
+  station_id, 
+  station_name,
+  year,
+  month,
+  day
+HAVING COUNT(*) > 1
+```
+
++ Checking for nulls in merged table using SQLite. 0 records returned on output.
+
+```{sql connection=conn, class.source='fold-show'}
+SELECT
+  station_id,
+  station_name,
+  year,
+  month,
+  day,
+  state,
+  dewp
+FROM recleaned_dewp_2010_2020
+WHERE
+  station_id IS NULL OR
+  station_name IS NULL OR
+  year IS NULL OR
+  month IS NULL OR
+  day IS NULL OR
+  state IS NULL OR
+  dewp IS NULL
+```
+
++ Further cleaning and transformation of merged table, with determining dew point average (Fahrenheit units) by month and by year for each state.  Values of 9999.9 are excluded from the averaging process (considered as missing observations per NOAA).  
+
+```{sql connection=conn, output.var="transformed_dewpoint_2010_2020", class.source='fold-show'}
+SELECT
+  state,
+  month,
+  year,
+  AVG(dewp) AS avg_dewp_f
+FROM
+  (SELECT DISTINCT station_id, 
+                station_name, 
+                year,
+                month,
+                day,
+                state, 
+                dewp
+   FROM recleaned_dewp_2010_2020
+   WHERE station_id IS NOT NULL AND
+         station_name IS NOT NULL AND
+         year IS NOT NULL AND
+         month IS NOT NULL AND
+         day IS NOT NULL AND 
+         state IS NOT NULL AND
+         dewp IS NOT NULL AND
+         dewp!=9999.9)
+GROUP BY
+  state,
+  month,
+  year
+```
+
++ Viewing the transformed table through glimpse() shows the total number of rows (6,600) matching what is expected, with `state` having 50 variables, `month` having 12 variables, and `year` having 11 variables.
+
+```{r}
+glimpse(transformed_dewpoint_2010_2020)
+```
+
+```{r, echo=FALSE}
+dbDisconnect(conn)
+```
+
++ State abbreviations are transformed into state full names within the `state` column, generating our final merged table.
+
+```{r}
+united_states_dewpoint_2010_2020 <- transformed_dewpoint_2010_2020 %>%
+  mutate(state = case_when(state=="AL"~"Alabama", state=="AK"~"Alaska", state=="AZ"~"Arizona", state=="AR"~"Arkansas", state=="CA"~"California", state=="CO"~"Colorado", state=="CT"~"Connecticut", state=="DE"~"Delaware", state=="FL"~"Florida", state=="GA"~"Georgia", state=="HI"~"Hawaii", state=="ID"~"Idaho", state=="IL"~"Illinois", state=="IN"~"Indiana", state=="IA"~"Iowa", state=="KS"~"Kansas", state=="KY"~"Kentucky", state=="LA"~"Louisiana", state=="ME"~"Maine", state=="MD"~"Maryland", state=="MA"~"Massachusetts", state=="MI"~"Michigan", state=="MN"~"Minnesota", state=="MS"~"Mississippi", state=="MO"~"Missouri", state=="MT"~"Montana", state=="NE"~"Nebraska", state=="NV"~"Nevada", state=="NH"~"New Hampshire", state=="NJ"~"New Jersey", state=="NM"~"New Mexico", state=="NY"~"New York", state=="NC"~"North Carolina", state=="ND"~"North Dakota", state=="OH"~"Ohio", state=="OK"~"Oklahoma", state=="OR"~"Oregon", state=="PA"~"Pennsylvania", state=="RI"~"Rhode Island", state=="SC"~"South Carolina", state=="SD"~"South Dakota", state=="TN"~"Tennessee", state=="TX"~"Texas", state=="UT"~"Utah", state=="VT"~"Vermont", state=="VA"~"Virginia", state=="WA"~"Washington", state=="WV"~"West Virginia", state=="WI"~"Wisconsin", state=="WY"~"Wyoming"))
+
+glimpse(united_states_dewpoint_2010_2020)
+```
+
++ The number of observations (132) for each state match what is expected, with `year` having 11 variables and `month` having 12 variables.  There are only 50 variables for `state` as well (not including District of Columbia).
+
+```{r}
+state_check <- united_states_dewpoint_2010_2020 %>% 
+  group_by(state) %>% 
+  tally() %>% 
+  ungroup()
+  
+state_check
+
+united_states_dewpoint_2010_2020 %>% 
+  summarize(distinct_states=n_distinct(state), 
+            distinct_months=n_distinct(month),
+            distinct_years=n_distinct(year))
+```
+
+## Data Analysis
+
+### WNV Overview
+
+```{r, warning=FALSE, message=FALSE}
+library(readxl)
+library(here)
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(janitor)
+
+WNV_summary_2010_2020 <- read_xlsx(here("WNV_summary_2010_2020.xlsx"))
+WNNV_state_cases_2010_2020 <- read_xlsx(here("WNNV_state_cases_2010_2020.xlsx"))
+
+WNV_summary_2010_2020 %>% 
+  filter(characteristic=="Nonneuroinvasive" |
+         characteristic=="Neuroinvasive_total" |
+         characteristic=="Hospitalization" |
+         characteristic=="Death") %>% 
+  ggplot() +
+  geom_bar(data=subset(WNV_summary_2010_2020, characteristic %in% c("Neuroinvasive_total", "Nonneuroinvasive")), 
+           aes(x=year, y=wnv_total_cases, fill="#87CEEB"), stat="identity") +
+  geom_point(data=subset(WNV_summary_2010_2020, characteristic %in% c("Neuroinvasive_total")), 
+             aes(x=year, y=wnv_total_cases, color="#FF9912"), stat="identity", size=2) +
+  geom_line(data=subset(WNV_summary_2010_2020, characteristic %in% c("Neuroinvasive_total")), 
+            aes(x=year, y=wnv_total_cases, color="#FF9912"), stat="identity", size=1) +
+  geom_point(data=subset(WNV_summary_2010_2020, characteristic %in% c("Hospitalization")), 
+             aes(x=year, y=wnv_total_cases, color="#871F78"), stat="identity", size=2) +
+  geom_line(data=subset(WNV_summary_2010_2020, characteristic %in% c("Hospitalization")), 
+            aes(x=year, y=wnv_total_cases, color="#871F78"), stat="identity", size=1) +
+  geom_point(data=subset(WNV_summary_2010_2020, characteristic %in% c("Death")), 
+             aes(x=year, y=wnv_total_cases, color="#CD0000"), stat="identity", size=2) +
+  geom_line(data=subset(WNV_summary_2010_2020, characteristic %in% c("Death")), 
+            aes(x=year, y=wnv_total_cases, color="#CD0000"), stat="identity", size=1) +
+  scale_x_continuous(breaks=seq(2010, 2020, by=1)) +
+  scale_y_continuous(breaks=seq(0, 6000, by=1000), expand=expansion(mult=c(0,0.075))) +
+  scale_fill_identity(name=" ",
+                      breaks=c("#87CEEB"),
+                      labels=c("WNV Total Cases"),
+                      guide="legend") +
+  scale_color_identity(name="Subcategory Trends",
+                       breaks=c("#871F78", "#FF9912", "#CD0000"),
+                       labels=c("Hospitalizations", "Neuroinvasive Cases", "Deaths"),
+                       guide="legend") +
+  theme_minimal() +
+  labs(title="West Nile Virus (WNV): Total Reported Cases, 2010-2020",
+       x="\n year",
+       y="WNV cases\n") +
+  theme(legend.title=element_text(face="bold"), 
+        legend.text=element_text(), 
+        legend.position=c(0.85,0.75))
+```
+
+```{r}
+WNV_total_cases <- WNV_summary_2010_2020 %>% 
+  filter(characteristic=="Neuroinvasive_total" | characteristic=="Nonneuroinvasive") %>% 
+  group_by(year) %>% 
+  summarize(wnv_cases=sum(wnv_total_cases)) %>% 
+  ungroup() %>% 
+  cbind(characteristic=c("WNV_total_cases", "WNV_total_cases", "WNV_total_cases", "WNV_total_cases", "WNV_total_cases", "WNV_total_cases", "WNV_total_cases", "WNV_total_cases", "WNV_total_cases", "WNV_total_cases", "WNV_total_cases"))
+
+data_subset_overview <- WNV_summary_2010_2020 %>% 
+  filter(characteristic=="Neuroinvasive_total" | characteristic=="Hospitalization" | characteristic=="Death") %>%
+  rename(wnv_cases=wnv_total_cases) %>% 
+  bind_rows(WNV_total_cases) %>% 
+  filter(year==2011 | year==2012 | year==2018) %>% 
+  pivot_wider(names_from=characteristic, values_from=wnv_cases) %>%
+  arrange(year) %>% 
+  rename(hospitalizations=Hospitalization, neuroinvasive_cases=Neuroinvasive_total, deaths=Death, wnv_total_cases=WNV_total_cases) %>% 
+  select(year, wnv_total_cases, hospitalizations, neuroinvasive_cases, deaths)
+
+kable(data_subset_overview) %>% 
+  kable_styling(bootstrap_options=c("striped", "condensed"))
+```
+
+Within the United States for 2010-2020, total WNV cases, hospitalizations, neuroinvasive cases, and deaths collectively experienced two peaks in 2012 and 2018.  All four categories also collectively experienced lowest values in 2011.  
+
+### WNV Seasonality
+
+```{r, fig.width=9}
+WNV_summary_2010_2020 %>% 
+  filter(characteristic=="January-March" |
+           characteristic=="April-June" |
+           characteristic=="July-September" |
+           characteristic=="October-December") %>% 
+  mutate(characteristic=fct_relevel(characteristic, "January-March", "April-June", "July-September", "October-December")) %>% 
+  ggplot(aes(x=year, 
+             y=wnv_total_cases,
+             fill=characteristic)) +
+  facet_wrap(~characteristic, scales="free") +
+  scale_x_continuous(breaks=seq(2010, 2020, by=1), expand=expansion(mult=c(0.02,0.02))) +
+  scale_y_continuous(expand=expansion(mult=c(0, 0.18))) +
+  geom_bar(stat="identity", alpha=0.8) +
+  labs(title="West Nile Virus (WNV): Seasonality Comparison Breakdown, 2010-2020",
+     x="\n year",
+     y="WNV cases\n") +
+  theme_bw() +
+  theme(legend.position="none", 
+        panel.border=element_blank(), 
+        panel.spacing.x=unit(1, "line"), 
+        panel.spacing.y=unit(1, "line"),
+        strip.background=element_blank(),
+        strip.text.x=element_text(face="bold"))
+```
+
+```{r, rows.print=25}
+data_subset_season <- WNV_summary_2010_2020 %>% 
+  filter(characteristic=="July-September") %>% 
+  rename(wnv_cases=wnv_total_cases) %>% 
+  bind_rows(WNV_total_cases) %>% # Subset data frame pulled from WNV Overview section; only contains total case values per year.
+  pivot_wider(names_from=characteristic, values_from=wnv_cases) %>%
+  clean_names() %>% 
+  mutate(total_case_pct=round(((july_september/wnv_total_cases)*100),1)) %>% 
+  rename(july_september_wnv_cases=july_september,
+         us_total_wnv_cases=wnv_total_cases)
+
+kable(data_subset_season) %>% 
+  kable_styling(bootstrap_options=c("striped", "condensed"))
+```
+
+The majority of reported WNV cases have illness onset occurring in July-September, accounting for 81.8%-93.1% of yearly total cases.
+
+### WNV - Neuroinvasive Cases Comparison By State
+
+```{r, fig.height=7}
+WNNV_state_cases_2010_2020 %>% 
+  filter(state!="United States") %>% 
+  ggplot(aes(x=wnnv_total_cases, y=reorder(state,wnnv_total_cases), fill=state)) + 
+  geom_boxplot(aes(color=state), alpha=0.4, outlier.color="black") +
+  scale_x_continuous(breaks=seq(0, 900, by=100), expand=expansion(mult=c(0,0.1))) +
+  theme_minimal() +
+  labs(title="West Nile Virus (WNV): Yearly Neuroinvasive Cases, 2010-2020",
+       subtitle="Comparison of yearly case distributions across all states and District of Columbia.\n",
+       x="\n WNV neuroinvasive cases",
+       y="state\n") +
+  theme(legend.position="none")
+```
+
+```{r}
+us_total_cases_2010_2020 <- WNNV_state_cases_2010_2020 %>% 
+  select(state,wnnv_total_cases) %>% 
+  group_by(state) %>% 
+  summarize(total_cases_2010_2020=sum(wnnv_total_cases)) %>% 
+  ungroup() %>% 
+  filter(!state=="United States") %>% 
+  summarize(us_total_cases_2010_2020=sum(total_cases_2010_2020)) 
+
+boxwhisker_summary_case_distribution <- WNNV_state_cases_2010_2020 %>% 
+  filter(state=="California" | state=="Texas" | state=="Illinois" | state=="Arizona" | state=="Colorado") %>% 
+  select(state, wnnv_total_cases) %>% 
+  group_by(state) %>% 
+  summarize(across(wnnv_total_cases, 
+                   list(sum=~sum(.), 
+                        min=~min(.),
+                        Q1=~round(quantile(., probs=0.25)), 
+                        median=~median(.), 
+                        Q3=~round(quantile(., probs=0.75)),
+                        max=~max(.)))) %>%
+  arrange(factor(state, c("California", "Texas", "Illinois", "Arizona", "Colorado"))) %>% 
+  ungroup() %>% 
+  rename(state_total_cases=wnnv_total_cases_sum,
+         yearly_case_min=wnnv_total_cases_min,
+         yearly_case_Q1=wnnv_total_cases_Q1,
+         yearly_case_median=wnnv_total_cases_median,
+         yearly_case_Q3=wnnv_total_cases_Q3,
+         yearly_case_max=wnnv_total_cases_max) %>% 
+  bind_cols(., us_total_cases_2010_2020) %>% 
+  mutate(us_total_case_pct=round(((state_total_cases/us_total_cases_2010_2020)*100),1)) %>% 
+  select(state,
+         state_total_cases,
+         us_total_case_pct,
+         yearly_case_min,
+         yearly_case_Q1,
+         yearly_case_median,
+         yearly_case_Q3,
+         yearly_case_max,
+         -us_total_cases_2010_2020) 
+
+kable(boxwhisker_summary_case_distribution) %>% 
+  kable_styling(bootstrap_options=c("striped", "condensed"))
+```
+
+California and Texas collectively experienced the greatest distributions for WNV neuroinvasive cases within the United States from 2010-2020.  During this time period, the yearly median for California was 237 neuroinvasive cases (interquartile range (IQR): 150-368 cases), and the yearly median for Texas was 108 neuroinvasive cases (IQR: 82-224 cases).  Illinois (median=51 cases, IQR: 36-92 cases), Arizona (median=67 cases, IQR: 50-92 cases), and Colorado (median=52 cases, IQR: 28-58 cases) follow, but to a significantly lesser extent with neuroinvasive case distributions and subsequent disease burden.
+
+```{r, message=FALSE, warning=FALSE}
+library(sf) 
+library(tigris) 
+library(geojsonio) 
+library(broom) 
+library(ggthemes) 
+library(plotly) 
+
+#reads and cleans shape files
+us_state_sf <- read_sf(here("cb_2020_us_state_500k.shp"))
+us_state_cleaned <- subset(us_state_sf, !STUSPS %in% c("PR", "AS", "MP", "GU", "VI"))
+us_state_transformed <- shift_geometry(us_state_cleaned)
+
+#wrote geojson file as st_write(us_state_transformed, here("cb_2020_us_state_500k.geojson")); reading geojson file
+us_state_sp <- geojson_read(here("cb_2020_us_state_500k.geojson"), what="sp")
+
+#converts geojson into data frame; region sets the id for conversion
+us_state_tidied <- tidy(us_state_sp, region="NAME")
+
+#merged geo data frame with WNNV table; left_join() also maintains row order which is necessary for mapping
+us_data_merged <- us_state_tidied %>% 
+  left_join(. , WNNV_state_cases_2010_2020, by=c("id"="state"))
+
+neuroinvasive_cases_choropleth <- us_data_merged %>%  
+  ggplot(aes(label=id)) +
+  geom_polygon(aes(x=long, 
+                   y=lat, 
+                   fill=wnnv_total_cases,
+                   group=group,
+                   frame=year), 
+               color="#00B2EE", linewidth=0.08)+
+  coord_equal() +
+  scale_fill_viridis_c(option="turbo") +
+  theme_map() +
+  labs(fill="WNNV cases")
+
+ggplotly(neuroinvasive_cases_choropleth) %>% #excluded tooltip specification here, since it breaks state mapping
+  animation_opts(transition=0) %>% 
+  animation_slider(currentvalue = list(prefix = "Selected Year: ", font=list(color="#000000")), yanchor="bottom") %>%
+  animation_button(visible=FALSE) %>% 
+  config(displayModeBar=FALSE) %>% 
+  layout(title=list(text=paste0("<br>",
+                                "<br>",
+                                "West Nile Virus Neuroinvasive (WNNV), 2010-2020: Total Neuroinvasive Cases")),
+         hoverlabel=list(bgcolor="white")) 
+```
+
+Choropleth mapping of the WNV neuroinvasive case distribution shows the changes experienced by each state over the years and supports what was observed above for distribution changes.
+
+### WNV - Neuroinvasive Rate Comparison By State
+
+```{r, fig.height=7}
+WNNV_state_cases_2010_2020 %>% 
+  filter(state!="United States") %>% 
+  ggplot(aes(x=wnnv_rate, y=reorder(state,wnnv_rate), fill=state)) + 
+  geom_boxplot(aes(color=state), alpha=0.4, outlier.color="black") +
+  scale_x_continuous(breaks=seq(0, 10, by=1), expand=expansion(mult=c(0,0.15))) +
+  theme_minimal() +
+  labs(title="West Nile Virus (WNV): Yearly Neuroinvasive Rates, 2010-2020",
+       subtitle="Comparison of rate distributions across all states and District of Columbia.\n",
+       x="\n WNV neuroinvasive case rate (per 100,000 population)",
+       y="state\n") +
+  theme(legend.position="none")
+```
+
+```{r}
+boxwhisker_summary_rate_distribution <- WNNV_state_cases_2010_2020 %>% 
+  filter(state=="North Dakota" | state=="South Dakota" | state=="Nebraska" | state=="Mississippi" | state=="Arizona") %>% 
+  select(state, wnnv_rate) %>% 
+  group_by(state) %>% 
+  summarize(across(wnnv_rate, 
+                   list(min=~min(.),
+                        Q1=~round(quantile(., probs=0.25), 2), 
+                        median=~median(.), 
+                        Q3=~round(quantile(., probs=0.75), 2),
+                        max=~max(.)))) %>% 
+  arrange(factor(state, c("North Dakota", "South Dakota", "Nebraska", "Mississippi", "Arizona"))) %>% 
+  ungroup() %>% 
+  rename(yearly_rate_min=wnnv_rate_min,
+         yearly_rate_Q1=wnnv_rate_Q1,
+         yearly_rate_median=wnnv_rate_median,
+         yearly_rate_Q3=wnnv_rate_Q3,
+         yearly_rate_max=wnnv_rate_max) 
+
+kable(boxwhisker_summary_rate_distribution) %>% 
+  kable_styling(bootstrap_options=c("striped", "condensed"))
+```
+
+North Dakota and South Dakota collectively experienced the greatest distributions for WNV neuroinvasive rates within the United States from 2010-2020, likely due to smaller population density pockets coupled with more favorable WNV spreading conditions.  During this time period, the yearly rate median for North Dakota was 1.62 neuroinvasive cases per 100,000 population (interquartile range (IQR): 0.29-4.37), and the yearly rate median for South Dakota was 1.41 neuroinvasive cases per 100,000 population (IQR: 0.80-4.69).  Nebraska (median=1.00 neuroinvasive cases per 100,000 population, IQR: 0.82-2.22), Mississippi (median=0.90 neuroinvasive cases per 100,000 population, IQR: 0.62-1.04), and Arizona (median=0.98 neuroinvasive cases per 100,000 population, IQR: 0.76-1.36) follow, but to a lesser extent with neuroinvasive rate distributions and subsequent disease burden.
+
+```{r, warning=FALSE}
+neuroinvasive_rate_choropleth <- us_data_merged %>%  
+  ggplot(aes(label=id)) +
+  geom_polygon(aes(x=long, 
+                   y=lat, 
+                   fill=wnnv_rate,
+                   group=group,
+                   frame=year), 
+               color="#00B2EE", linewidth=0.08)+
+  coord_equal() +
+  scale_fill_viridis_c(option="turbo") +
+  theme_map() +
+  labs(fill=paste0("WNNV case rate",
+                   "<br>",
+                   "(per 100,000",
+                   "<br>",
+                   "population)"))
+
+ggplotly(neuroinvasive_rate_choropleth) %>% #excluded tooltip specification here, since it breaks state mapping
+  animation_opts(transition=0) %>% 
+  animation_slider(currentvalue = list(prefix = "Selected Year: ", font=list(color="#000000")), yanchor="bottom") %>%
+  animation_button(visible=FALSE) %>% 
+  config(displayModeBar=FALSE) %>% 
+  layout(title=list(text=paste0("<br>",
+                                "<br>",
+                                "West Nile Virus Neuroinvasive (WNNV), 2010-2020: Neuroinvasive Rate")),
+         hoverlabel=list(bgcolor="white")) 
+```
+
+Choropleth mapping of the WNV neuroinvasive rate distribution shows the changes experienced by each state over the years and supports what was observed above for distribution changes.
+
+### Exploring Potential Environmental Drivers
+
+Three potential environmental driving factors were examined to see if there were any correlations with the observed WNV disease incidence trends: temperature anomaly, precipitation anomaly, and dew point.  These factors were further subdivided into seasonal periods that corresponded with how the CDC divided the publicly reported WNV cases: January-March, April-June, July-September, and October-December.  These seasonal periods were examined for potential correlations behind the two highest WNV total case counts observed in 2012 and 2018. 
+
+#### **Seasonal Period: January-March**
+
+```{r}
+library(ggplot2)
+library(plotly)
+
+us_climate_data_merged_jan_mar <- united_states_temperature_2010_2020 %>% 
+  inner_join(., united_states_precipitation_2010_2020, by=c("state", "month", "year")) %>% 
+  inner_join(., united_states_dewpoint_2010_2020, by=c("state", "month", "year")) %>% 
+  filter(month==c(1,2,3)) %>% 
+  group_by(state, year) %>% 
+  mutate(jan_mar_temp_anomaly=round(mean(temperature_anomaly_f), 1)) %>% 
+  mutate(jan_mar_precip_anomaly=round(mean(precipitation_anomaly_inches), 1)) %>% 
+  mutate(jan_mar_avg_dewp=round(mean(avg_dewp_f), 1)) %>% 
+  ungroup() %>% 
+  distinct(state, year, jan_mar_temp_anomaly, jan_mar_precip_anomaly, jan_mar_avg_dewp) %>%  # removing duplicates
+  inner_join(., WNNV_state_cases_2010_2020, by=c("state", "year")) %>% 
+  rename(wnnv_year_total_cases=wnnv_total_cases, wnnv_year_rate=wnnv_rate)
+
+plot_ly(us_climate_data_merged_jan_mar,
+        x=~year, 
+        y=~jan_mar_temp_anomaly, 
+        type="box", 
+        fillcolor="#E55451", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="#800000", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Jan-Mar Temperature Anomaly:", jan_mar_temp_anomaly, "(F)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Jan - Mar,  Temperature Anomaly (F)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Temperature Anomaly, January-March")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+```{r}
+plot_ly(us_climate_data_merged_jan_mar,
+        x=~year, 
+        y=~jan_mar_precip_anomaly, 
+        type="box", 
+        fillcolor="#E0FFFF", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="blue", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Jan-Mar Precipitation Anomaly:", jan_mar_precip_anomaly, "(inches)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Jan - Mar,  Precipitation Anomaly (Inches)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Precipitation Anomaly, January-March")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+```{r}
+plot_ly(us_climate_data_merged_jan_mar,
+        x=~year, 
+        y=~jan_mar_avg_dewp, 
+        type="box", 
+        fillcolor="#50C878", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="green", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Jan-Mar Avg Dew Point:", jan_mar_avg_dewp, "(F)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Jan - Mar,  Average Dew Point (F)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Average Dew Point, January-March")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+#### **Seasonal Period: April-June**
+
+```{r}
+us_climate_data_merged_apr_jun <- united_states_temperature_2010_2020 %>% 
+  inner_join(., united_states_precipitation_2010_2020, by=c("state", "month", "year")) %>% 
+  inner_join(., united_states_dewpoint_2010_2020, by=c("state", "month", "year")) %>% 
+  filter(month==c(4,5,6)) %>% 
+  group_by(state, year) %>% 
+  mutate(apr_jun_temp_anomaly=round(mean(temperature_anomaly_f), 1)) %>% 
+  mutate(apr_jun_precip_anomaly=round(mean(precipitation_anomaly_inches), 1)) %>% 
+  mutate(apr_jun_avg_dewp=round(mean(avg_dewp_f), 1)) %>% 
+  ungroup() %>% 
+  distinct(state, year, apr_jun_temp_anomaly, apr_jun_precip_anomaly, apr_jun_avg_dewp) %>%  # removing duplicates
+  inner_join(., WNNV_state_cases_2010_2020, by=c("state", "year")) %>% 
+  rename(wnnv_year_total_cases=wnnv_total_cases, wnnv_year_rate=wnnv_rate)
+
+plot_ly(us_climate_data_merged_apr_jun,
+        x=~year, 
+        y=~apr_jun_temp_anomaly, 
+        type="box", 
+        fillcolor="#E55451", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="#800000", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Apr-Jun Temperature Anomaly:", apr_jun_temp_anomaly, "(F)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Apr - Jun,  Temperature Anomaly (F)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Temperature Anomaly, April-June")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+```{r}
+plot_ly(us_climate_data_merged_apr_jun,
+        x=~year, 
+        y=~apr_jun_precip_anomaly, 
+        type="box", 
+        fillcolor="#E0FFFF", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="blue", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Apr-Jun Precipitation Anomaly:", apr_jun_precip_anomaly, "(inches)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Apr - Jun,  Precipitation Anomaly (Inches)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Precipitation Anomaly, April-June")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+```{r}
+plot_ly(us_climate_data_merged_apr_jun,
+        x=~year, 
+        y=~apr_jun_avg_dewp, 
+        type="box", 
+        fillcolor="#50C878", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="green", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Apr-Jun Avg Dew Point:", apr_jun_avg_dewp, "(F)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Apr - Jun,  Average Dew Point (F)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Average Dew Point, April-June")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+#### **Seasonal Period: July-September**
+
+```{r}
+us_climate_data_merged_jul_sept <- united_states_temperature_2010_2020 %>% 
+  inner_join(., united_states_precipitation_2010_2020, by=c("state", "month", "year")) %>% 
+  inner_join(., united_states_dewpoint_2010_2020, by=c("state", "month", "year")) %>% 
+  filter(month==c(7,8,9)) %>% 
+  group_by(state, year) %>% 
+  mutate(jul_sept_temp_anomaly=round(mean(temperature_anomaly_f), 1)) %>% 
+  mutate(jul_sept_precip_anomaly=round(mean(precipitation_anomaly_inches), 1)) %>% 
+  mutate(jul_sept_avg_dewp=round(mean(avg_dewp_f), 1)) %>% 
+  ungroup() %>% 
+  distinct(state, year, jul_sept_temp_anomaly, jul_sept_precip_anomaly, jul_sept_avg_dewp) %>%  # removing duplicates
+  inner_join(., WNNV_state_cases_2010_2020, by=c("state", "year")) %>% 
+  rename(wnnv_year_total_cases=wnnv_total_cases, wnnv_year_rate=wnnv_rate)
+
+plot_ly(us_climate_data_merged_jul_sept,
+        x=~year, 
+        y=~jul_sept_temp_anomaly, 
+        type="box", 
+        fillcolor="#E55451", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="#800000", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Jul-Sept Temperature Anomaly:", jul_sept_temp_anomaly, "(F)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Jul - Sept,  Temperature Anomaly (F)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Temperature Anomaly, July-September")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+```{r}
+plot_ly(us_climate_data_merged_jul_sept,
+        x=~year, 
+        y=~jul_sept_precip_anomaly, 
+        type="box", 
+        fillcolor="#E0FFFF", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="blue", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Jul-Sept Precipitation Anomaly:", jul_sept_precip_anomaly, "(inches)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Jul - Sept,  Precipitation Anomaly (Inches)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Precipitation Anomaly, July-September")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+```{r}
+plot_ly(us_climate_data_merged_jul_sept,
+        x=~year, 
+        y=~jul_sept_avg_dewp, 
+        type="box", 
+        fillcolor="#50C878", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="green", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Jul-Sept Avg Dew Point:", jul_sept_avg_dewp, "(F)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Jul - Sept,  Average Dew Point (F)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Average Dew Point, July-September")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+#### **Seasonal Period: October-December**
+
+```{r}
+us_climate_data_merged_oct_dec <- united_states_temperature_2010_2020 %>% 
+  inner_join(., united_states_precipitation_2010_2020, by=c("state", "month", "year")) %>% 
+  inner_join(., united_states_dewpoint_2010_2020, by=c("state", "month", "year")) %>% 
+  filter(month==c(10,11,12)) %>% 
+  group_by(state, year) %>% 
+  mutate(oct_dec_temp_anomaly=round(mean(temperature_anomaly_f), 1)) %>% 
+  mutate(oct_dec_precip_anomaly=round(mean(precipitation_anomaly_inches), 1)) %>% 
+  mutate(oct_dec_avg_dewp=round(mean(avg_dewp_f), 1)) %>% 
+  ungroup() %>% 
+  distinct(state, year, oct_dec_temp_anomaly, oct_dec_precip_anomaly, oct_dec_avg_dewp) %>%  # removing duplicates
+  inner_join(., WNNV_state_cases_2010_2020, by=c("state", "year")) %>% 
+  rename(wnnv_year_total_cases=wnnv_total_cases, wnnv_year_rate=wnnv_rate)
+
+plot_ly(us_climate_data_merged_oct_dec,
+        x=~year, 
+        y=~oct_dec_temp_anomaly, 
+        type="box", 
+        fillcolor="#E55451", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="#800000", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Oct-Dec Temperature Anomaly:", oct_dec_temp_anomaly, "(F)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Oct - Dec,  Temperature Anomaly (F)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Temperature Anomaly, October-December")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+```{r}
+plot_ly(us_climate_data_merged_oct_dec,
+        x=~year, 
+        y=~oct_dec_precip_anomaly, 
+        type="box", 
+        fillcolor="#E0FFFF", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="blue", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Oct-Dec Precipitation Anomaly:", oct_dec_precip_anomaly, "(inches)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Oct - Dec,  Precipitation Anomaly (Inches)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Precipitation Anomaly, October-December")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+```{r}
+plot_ly(us_climate_data_merged_oct_dec,
+        x=~year, 
+        y=~oct_dec_avg_dewp, 
+        type="box", 
+        fillcolor="#50C878", 
+        boxpoints="all", 
+        pointpos=0, 
+        marker=list(color="green", opacity=0.4), 
+        line=list(color="black", width=1.5),
+        text=~paste("<br>State:", state,
+                    "<br>Year:", year,
+                    "<br>WNNV Yearly Total Cases:", wnnv_year_total_cases,
+                    "<br>WNNV Yearly Case Rate:", wnnv_year_rate, "(per 100,000)",
+                    "<br>Oct-Dec Avg Dew Point:", oct_dec_avg_dewp, "(F)")) %>% 
+layout(xaxis=list(title="<br>Year", dtick=1),
+       yaxis=list(title="Oct - Dec,  Average Dew Point (F)"),
+       hoverlabel=list(bgcolor="white"),
+       title=list(text="Average Dew Point, October-December")) %>% 
+config(displayModeBar=FALSE, showTips=FALSE)
+```
+
+
+Based on these charts collectively, the following environmental correlations were found for the WNV disease incidence peaks in 2012 and 2018:
+
+* Warmer than normal October-December on the preceding year
+* Warmer than normal January-March
+* Warmer than normal April-June
+* Drier than normal April-June for 2012
+  + This may partly explain the significant difference between WNV total case counts for 2012 and 2018.  Increased drought-like conditions promote WNV transmission indirectly by creating a more favorable environment for mosquito vectors as well as increased mosquito vector-avian host interactions with a more limiting water availability.^5^
+
+These correlations are weak however, given that 2016 reflected similar environmental patterns nationally.  The significantly wetter than normal October-December on the preceding year may partly explain the lowered WNV total case count for 2016.  This could be due to the increased precipitation causing changes in water sources that would make it less conducive for WNV transmission indirectly.^5^  
+
+No correlations were identified between seasonal average dew points and WNV disease incidence peaks based on the charts above.
+
+## Key Findings and Recommendations
+
+During 2010-2020 within the United States, total WNV cases, WNV-related hospitalizations, WNV neuroinvasive cases, and WNV-related deaths collectively experienced two peaks in 2012 (total cases-5674, hospitalizations-3491, neuroinvasive cases-2873, deaths-286) and 2018 (total cases-2647, hospitalizations-1774, neuroinvasive cases-1658, deaths-167).  Total WNV cases, WNV-related hospitalizations, WNV neuroinvasive cases, and WNV-related deaths collectively experienced lowest values in 2011 (total cases-712, hospitalizations-547, neuroinvasive cases-486, deaths-43).  
+
+The majority of reported WNV cases had illness onset occurring in July-September, accounting for 81.8%-93.1% of yearly total cases. 
+
+The top five states with the largest yearly WNV neuroinvasive case distributions for 2010-2020 were California (median: 237 cases, IQR: 150-368 cases), Texas (median: 108 cases, IQR: 82-224 cases), Illinois (median: 51 cases, IQR: 36-92 cases), Arizona (median: 67 cases, IQR: 50-92 cases), and Colorado (median: 52 cases, IQR: 28-58 cases).  The top five states with the largest yearly WNV neuroinvasive rate distributions for 2010-2020 were North Dakota (median: 1.62 per 100,000 population, IQR: 0.29-4.37), South Dakota (median: 1.41 per 100,000 population, IQR: 0.80-4.69), Nebraska (median: 1.00 per 100,000 population, IQR: 0.82-2.22), Mississippi (median: 0.90 per 100,000 population, IQR: 0.62-1.04), and Arizona (median: 0.98 per 100,000 population, IQR: 0.76-1.36). 
+
+Greater emphasis should be placed on these 10 states by public health authorities for WNV prevention and control activities, particularly for the months of July-September.  These 10 states represent those that are most affected by WNV disease burden, between the states that have the highest WNV case counts and the states whose population densities are at a significantly increased risk for WNV transmission.
+
+Weak environmental correlations were found for the WNV incidence peaks in 2012 and 2018: warmer than normal October-December on the preceding year, warmer than normal January-March, warmer than normal April-June, and drier than normal April-June for 2012.
+
+Conducting further analysis at a higher level of detail is needed for further exploring the correlations between these environmental factors and WNV disease incidence.  To better determine the strength and direction of these correlations, we need to account for significant differences in microclimates within each state. States such as California and Texas have higher variability in these microclimates and breaking down the environmental factors and the reported WNV incidence by county-level will capture these differences.  The optimal ecology for the WNV transmission cycle and the interactions between mosquito vectors and hosts is complex, with the findings from this analysis warranting the need for further examination at the county-level.  
+
+## Source Citations and Credits
+
+#### **References**
+
+1. McDonald E, Mathis S, Martin SW, Staples JE, Fischer M, Lindsey NP. Surveillance for West Nile virus disease — United States, 2009–2018.
+ *American Journal of Transplantation*. 2021;21(5):1959-1974. Retrieved from: [https://www.sciencedirect.com/science/article/pii/S1600613522085604](https://www.sciencedirect.com/science/article/pii/S1600613522085604)
+2. Ronca SE, Ruff JC, Murray KO. A 20-year historical review of West Nile virus since its initial emergence in North America: Has West Nile virus become a neglected tropical disease? *PLoS Neglected Tropical Diseases*. 2021;15(5):e0009190. Retrieved from: [https://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0009190](https://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0009190)
+3. Nash D, Mostashari F, Fine A, et al. The Outbreak of West Nile Virus Infection in the New York City Area in 1999. *The New England Journal of Medicine*. 2001; 344(24):1807-1814. Retrieved from: [https://www.nejm.org/doi/full/10.1056/NEJM200106143442401](https://www.nejm.org/doi/full/10.1056/NEJM200106143442401)
+4. Symptoms, Diagnosis, & Treatment, West Nile Virus. Centers for Disease Control and Prevention. Retrieved from: [https://www.cdc.gov/westnile/symptoms/index.html](https://www.cdc.gov/westnile/symptoms/index.html)
+5. Paz S, Semenza JC. Environmental Drivers of West Nile Fever Epidemiology in Europe and Western Asia - A Review. *International Journal of Environmental Research and Public Health* 2013;10(8):3543-3562. Retrieved from: [https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3774453/](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3774453/)
+6. Surveillance Resources, West Nile Virus. Centers for Disease Control and Prevention. Retrieved from: [https://www.cdc.gov/westnile/resourcepages/survResources.html](https://www.cdc.gov/westnile/resourcepages/survResources.html)
+
+#### **Data Sources**
+
+* Data concerning reported West Nile virus disease incidences for 2010-2020 were obtained from the Centers for Disease Control and Prevention (CDC) through their publicly available Morbidity and Mortality Weekly Report (MMWR) publications.
+* Data concerning temperature, precipitation, and dew point were obtained from the National Oceanic and Atmospheric Administration (NOAA) on their publicly available U.S. Climate Divisional Database and Global Surface Summary of the Day. 
+
+#### **Image and Shapefiles**
+
+* Transmission electron microscopic image of West Nile Virus was obtained from the CDC's Public Health Image Library. Retrieved from: [https://phil.cdc.gov/details.aspx?pid=10701](https://phil.cdc.gov/details.aspx?pid=10701)
+* United States cartographic state boundary shapefiles used for the choropleth mappings were obtained from the Census Bureau, with a resolution level selection of 1:500,000 for the year 2020. Retrieved from: [https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.2020.html](https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.2020.html)
+
