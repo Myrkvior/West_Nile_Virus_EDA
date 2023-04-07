@@ -5,13 +5,12 @@ author: "Sarah Upham"
 date: "`r Sys.Date()`"
 output: 
   html_document:
-    toc: true
-    toc_float: true
+    toc: TRUE
+    toc_float: TRUE
     df_print: paged
     theme: lumen
     code_folding: hide
 ---
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
