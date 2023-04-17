@@ -3,7 +3,7 @@
 As my capstone project for the Google Data Analytics program, I chose to design my own case study and perform an exploratory data analysis on reported West Nile virus cases within the United States for 2010-2020. 
 
 To view the analysis:
-- The rendered HTML file is included in this repository as a .zip file (due to GitHub upload size constraints), which can be opened and viewed in your local environment.  Since LZMA compression was used for generating the .zip file, using archiving utility software such as 7-Zip is recommended.
+- The rendered HTML file is included in this repository as a .zip file (due to GitHub upload size constraints), which can be opened and viewed in your local environment.  Since LZMA compression was used for generating the .zip file, using an archive utility software such as 7-Zip for file extraction is recommended.
 - You may also view it in your browser as a Kaggle Notebook here: [https://www.kaggle.com/code/myrkvior/west-nile-virus-eda](https://www.kaggle.com/code/myrkvior/west-nile-virus-eda)
 - Please note that the Kaggle notebook browser version has slight modifications in the HTML page formatting due to issues pertaining to the hosting platform (analysis content remains the same).
 
